@@ -14,6 +14,7 @@ Built with Astro, deployed to GitHub Pages.
 - ✅ Sitemap support
 - ✅ RSS Feed support
 - ✅ Markdown & MDX support
+- ✅ **Data Explorer** - Interactive financial data pages powered by [cdata](https://github.com/kenEldridge/cdata)
 
 ## 🚀 Project Structure
 
@@ -117,6 +118,69 @@ To add to a post:
 1. Create component in `src/components/`
 2. Import in your `.mdx` file: `import MyPlot from '../../../components/MyPlot.astro';`
 3. Use in content: `<MyPlot />`
+
+## 📈 Data Explorer
+
+The site includes a data explorer that displays financial and economic data collected via [cdata](https://github.com/kenEldridge/cdata).
+
+### Data Sources (11 datasets)
+
+**Price Data (OHLCV):**
+- `us_indices` - S&P 500, Dow, NASDAQ, Russell 2000, VIX
+- `global_indices` - FTSE, DAX, Nikkei, Hang Seng, Euro Stoxx
+- `treasury_yields` - 13-week, 5yr, 10yr, 30yr Treasury yields
+- `bond_etfs` - TLT, IEF, SHY, AGG, LQD, HYG, TIP, MUB
+- `currencies` - Dollar Index, EUR, GBP, JPY, CNY
+- `commodities` - Gold, Silver, WTI, Brent, Natural Gas, Copper
+- `sector_etfs` - All 10 S&P 500 sector ETFs
+- `macro_proxies` - SPY, QQQ, IWM, GLD, etc.
+
+**News Feeds (RSS):**
+- `fed_news` - Federal Reserve press releases & speeches
+- `financial_news` - Yahoo Finance, Seeking Alpha, CNBC
+- `economics_news` - Calculated Risk, Marginal Revolution
+
+### Refreshing Data
+
+Data is fetched from cdata and converted to JSON at build time:
+
+```bash
+# Refresh data from cdata (requires cdata project at ../cdata)
+python3 scripts/prepare-data.py
+
+# Or use npm script
+npm run prepare-data
+```
+
+### Data Page Features
+
+Each dataset page includes:
+- **Data Freshness** - First fetched, last updated, fetch count
+- **Summary Statistics** - Date ranges, per-symbol stats
+- **Interactive Charts** - Plotly candlestick/line charts (OHLCV data)
+- **News Timeline** - Recent articles (RSS data)
+- **Data Schema** - Column names and primary keys
+
+### Project Structure (Data)
+
+```
+├── scripts/
+│   └── prepare-data.py          # Converts parquet → JSON
+├── src/
+│   ├── components/data/
+│   │   ├── DatasetCard.astro    # Landing page card
+│   │   ├── DataFreshness.astro  # Freshness indicator
+│   │   ├── DatasetStats.astro   # Summary stats table
+│   │   ├── TimeSeriesPlot.astro # Plotly charts
+│   │   └── NewsTimeline.astro   # RSS article list
+│   ├── data/
+│   │   └── datasets.json        # Generated metadata
+│   └── pages/data/
+│       ├── index.astro          # Landing page
+│       └── [dataset].astro      # Dynamic dataset pages
+└── public/data/
+    └── *.json                   # Generated dataset files
+```
 
 ## 👀 Want to learn more?
 
