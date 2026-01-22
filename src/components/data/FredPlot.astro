@@ -1,0 +1,387 @@
+---
+interface Props {
+  datasetName: string;
+  series: string[];
+}
+
+const { datasetName, series } = Astro.props;
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
+const dataUrl = `${base}data/${datasetName}.json`;
+---
+
+<div class="plot-section">
+  <div class="plot-header">
+    <h3>Economic Indicator Chart</h3>
+    <div class="plot-controls">
+      <label for={`series-select-${datasetName}`}>Series:</label>
+      <select id={`series-select-${datasetName}`} class="series-select">
+        {series.map((s, i) => (
+          <option value={s} selected={i === 0}>{s}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <div class="range-buttons" data-dataset={datasetName}>
+    <button data-range="1Y" class="range-btn">1Y</button>
+    <button data-range="5Y" class="range-btn">5Y</button>
+    <button data-range="10Y" class="range-btn">10Y</button>
+    <button data-range="20Y" class="range-btn">20Y</button>
+    <button data-range="MAX" class="range-btn active">Max</button>
+  </div>
+
+  <div id={`plot-${datasetName}`} class="plot-container" data-url={dataUrl}>
+    <div class="loading">Loading chart data...</div>
+  </div>
+
+  <div id={`info-${datasetName}`} class="series-info"></div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js" is:inline></script>
+
+<script is:inline>
+(function() {
+  function waitForPlotly(callback) {
+    if (typeof Plotly !== 'undefined') {
+      callback();
+    } else {
+      setTimeout(() => waitForPlotly(callback), 100);
+    }
+  }
+
+  waitForPlotly(function() {
+    document.querySelectorAll('.plot-container').forEach(container => {
+      if (!container.id.startsWith('plot-fred_')) return;
+
+      const datasetName = container.id.replace('plot-', '');
+      const dataUrl = container.dataset.url;
+      let chartData = null;
+      let currentRange = 'MAX';
+
+      const seriesSelect = document.getElementById(`series-select-${datasetName}`);
+      const infoDiv = document.getElementById(`info-${datasetName}`);
+      const rangeButtonsContainer = document.querySelector(`.range-buttons[data-dataset="${datasetName}"]`);
+      const rangeButtons = rangeButtonsContainer ? rangeButtonsContainer.querySelectorAll('.range-btn') : [];
+
+      async function loadData() {
+        if (chartData) return chartData;
+        try {
+          const response = await fetch(dataUrl);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          chartData = await response.json();
+          return chartData;
+        } catch (err) {
+          console.error('Failed to load data:', err);
+          container.innerHTML = '<p style="text-align:center;color:#ef4444;padding:2rem;">Failed to load chart data</p>';
+          return null;
+        }
+      }
+
+      function filterByRange(data, range) {
+        if (range === 'MAX') return data;
+
+        const now = new Date();
+        let cutoff;
+
+        switch (range) {
+          case '1Y':
+            cutoff = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+            break;
+          case '5Y':
+            cutoff = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+            break;
+          case '10Y':
+            cutoff = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
+            break;
+          case '20Y':
+            cutoff = new Date(now.getFullYear() - 20, now.getMonth(), now.getDate());
+            break;
+          default:
+            return data;
+        }
+
+        return data.filter(d => new Date(d.date) >= cutoff);
+      }
+
+      async function renderPlot(seriesId, range) {
+        const dataset = await loadData();
+        if (!dataset || !dataset.data) {
+          container.innerHTML = '<p style="text-align:center;color:#ef4444;padding:2rem;">No data available</p>';
+          return;
+        }
+
+        let data = dataset.data.filter(d => d.series_id === seriesId);
+
+        if (data.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem;">No data for this series</p>';
+          return;
+        }
+
+        // Sort by date
+        data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Get series info
+        const seriesInfo = dataset.stats?.by_series?.[seriesId] || {};
+        const title = seriesInfo.title || seriesId;
+        const units = seriesInfo.units || data[0]?.units || '';
+
+        // Apply range filter
+        data = filterByRange(data, range);
+
+        if (data.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem;">No data in selected range</p>';
+          return;
+        }
+
+        // Update info box
+        if (infoDiv) {
+          const latest = seriesInfo.value_latest || data[data.length - 1]?.value;
+          infoDiv.innerHTML = `
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Title</span>
+                <span class="info-value">${title}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Units</span>
+                <span class="info-value">${units}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Latest</span>
+                <span class="info-value">${latest?.toLocaleString() ?? 'N/A'}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Frequency</span>
+                <span class="info-value">${seriesInfo.frequency || 'N/A'}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const bgColor = isDark ? '#1a1a2e' : '#ffffff';
+        const textColor = isDark ? '#e0e0e0' : '#333333';
+        const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+        const traces = [{
+          x: data.map(d => d.date),
+          y: data.map(d => d.value),
+          type: 'scattergl',
+          mode: 'lines',
+          name: seriesId,
+          line: { color: '#3b82f6', width: 1.5 },
+          fill: 'tozeroy',
+          fillcolor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+        }];
+
+        const rangeLabel = range === 'MAX' ? 'All Time' : `Last ${range}`;
+
+        const layout = {
+          title: {
+            text: `${seriesId} - ${rangeLabel} (${data.length.toLocaleString()} points)`,
+            font: { color: textColor, size: 14 },
+          },
+          xaxis: {
+            title: 'Date',
+            gridcolor: gridColor,
+            color: textColor,
+            rangeslider: { visible: range === 'MAX' },
+          },
+          yaxis: {
+            title: units || 'Value',
+            gridcolor: gridColor,
+            color: textColor,
+          },
+          paper_bgcolor: bgColor,
+          plot_bgcolor: bgColor,
+          font: { color: textColor },
+          margin: { t: 50, r: 30, b: 50, l: 70 },
+          hovermode: 'x unified',
+          height: 450,
+          autosize: true,
+        };
+
+        Plotly.newPlot(container.id, traces, layout, {
+          responsive: true,
+          displayModeBar: true,
+          modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        });
+      }
+
+      function updateRangeButtons(activeRange) {
+        rangeButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.range === activeRange);
+        });
+      }
+
+      if (seriesSelect) {
+        seriesSelect.addEventListener('change', (e) => {
+          renderPlot(e.target.value, currentRange);
+        });
+      }
+
+      rangeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentRange = btn.dataset.range;
+          updateRangeButtons(currentRange);
+          renderPlot(seriesSelect.value, currentRange);
+        });
+      });
+
+      const observer = new MutationObserver(() => {
+        if (chartData) {
+          renderPlot(seriesSelect.value, currentRange);
+        }
+      });
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+
+      renderPlot(seriesSelect.value, currentRange);
+    });
+  });
+})();
+</script>
+
+<style>
+  .plot-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .plot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-heading);
+  }
+
+  .plot-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  select {
+    padding: 0.375rem 0.625rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  select:hover {
+    border-color: var(--accent);
+  }
+
+  .range-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .range-btn {
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .range-btn:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+  }
+
+  .range-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .plot-container {
+    width: 100%;
+    height: 450px;
+    min-height: 450px;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+  }
+
+  .series-info {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .info-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .info-value {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 600px) {
+    .plot-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .plot-container {
+      height: 350px;
+      min-height: 350px;
+    }
+
+    .range-btn {
+      padding: 0.3rem 0.5rem;
+      font-size: 0.75rem;
+    }
+  }
+</style>

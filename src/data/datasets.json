@@ -1064,5 +1064,797 @@
         }
       }
     }
+  },
+  {
+    "name": "fred_inflation",
+    "type": "fred",
+    "description": "Consumer and producer price indices",
+    "meta": {
+      "record_count": 5306,
+      "first_fetched": "2026-01-22T13:41:24.922814",
+      "last_updated": "2026-01-22T13:41:24.922814",
+      "last_record_date": "2025-12-01T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "CPIAUCSL",
+        "CPILFESL",
+        "MICH",
+        "PCEPI",
+        "PCEPILFE",
+        "PPIACO"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1913-01-01T00:00:00+00:00",
+        "max": "2025-12-01T00:00:00+00:00",
+        "days": 41242
+      },
+      "by_series": {
+        "CPIAUCSL": {
+          "title": "Consumer Price Index for All Urban Consumers: All Items in U.S. City Average",
+          "units": "Index 1982-1984=100",
+          "frequency": "Monthly",
+          "count": 947,
+          "date_min": "1947-01-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 123.8484,
+          "value_min": 21.48,
+          "value_max": 326.03,
+          "value_latest": 326.03
+        },
+        "CPILFESL": {
+          "title": "Consumer Price Index for All Urban Consumers: All Items Less Food and Energy in U.S. City Average",
+          "units": "Index 1982-1984=100",
+          "frequency": "Monthly",
+          "count": 827,
+          "date_min": "1957-01-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 141.8497,
+          "value_min": 28.5,
+          "value_max": 331.86,
+          "value_latest": 331.86
+        },
+        "MICH": {
+          "title": "University of Michigan: Inflation Expectation",
+          "units": "Percent",
+          "frequency": "Monthly",
+          "count": 575,
+          "date_min": "1978-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 3.6052,
+          "value_min": 0.4,
+          "value_max": 10.4,
+          "value_latest": 4.5
+        },
+        "PCEPI": {
+          "title": "Personal Consumption Expenditures: Chain-type Price Index",
+          "units": "Index 2017=100",
+          "frequency": "Monthly",
+          "count": 801,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-09-01T00:00:00+00:00",
+          "value_mean": 60.7282,
+          "value_min": 15.164,
+          "value_max": 127.626,
+          "value_latest": 127.626
+        },
+        "PCEPILFE": {
+          "title": "Personal Consumption Expenditures Excluding Food and Energy (Chain-Type Price Index)",
+          "units": "Index 2017=100",
+          "frequency": "Monthly",
+          "count": 801,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-09-01T00:00:00+00:00",
+          "value_mean": 60.8872,
+          "value_min": 15.501,
+          "value_max": 126.955,
+          "value_latest": 126.955
+        },
+        "PPIACO": {
+          "title": "Producer Price Index by Commodity: All Commodities",
+          "units": "Index 1982=100",
+          "frequency": "Monthly",
+          "count": 1355,
+          "date_min": "1913-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 79.545,
+          "value_min": 10.3,
+          "value_max": 280.251,
+          "value_latest": 261.556
+        }
+      }
+    }
+  },
+  {
+    "name": "fred_gdp",
+    "type": "fred",
+    "description": "Gross Domestic Product and related measures",
+    "meta": {
+      "record_count": 1259,
+      "first_fetched": "2026-01-22T13:43:24.229075",
+      "last_updated": "2026-01-22T13:43:24.229075",
+      "last_record_date": "2025-07-01T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "A191RL1Q225SBEA",
+        "GDP",
+        "GDPC1",
+        "GDPDEF"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1947-01-01T00:00:00+00:00",
+        "max": "2025-07-01T00:00:00+00:00",
+        "days": 28671
+      },
+      "by_series": {
+        "A191RL1Q225SBEA": {
+          "title": "Real Gross Domestic Product",
+          "units": "Percent Change from Preceding Period",
+          "frequency": "Quarterly",
+          "count": 314,
+          "date_min": "1947-04-01T00:00:00+00:00",
+          "date_max": "2025-07-01T00:00:00+00:00",
+          "value_mean": 3.2016,
+          "value_min": -28.0,
+          "value_max": 34.9,
+          "value_latest": 4.3
+        },
+        "GDP": {
+          "title": "Gross Domestic Product",
+          "units": "Billions of Dollars",
+          "frequency": "Quarterly",
+          "count": 315,
+          "date_min": "1947-01-01T00:00:00+00:00",
+          "date_max": "2025-07-01T00:00:00+00:00",
+          "value_mean": 7675.4325,
+          "value_min": 243.164,
+          "value_max": 31095.089,
+          "value_latest": 31095.089
+        },
+        "GDPC1": {
+          "title": "Real Gross Domestic Product",
+          "units": "Billions of Chained 2017 Dollars",
+          "frequency": "Quarterly",
+          "count": 315,
+          "date_min": "1947-01-01T00:00:00+00:00",
+          "date_max": "2025-07-01T00:00:00+00:00",
+          "value_mean": 10279.9665,
+          "value_min": 2172.432,
+          "value_max": 24024.957,
+          "value_latest": 24024.957
+        },
+        "GDPDEF": {
+          "title": "Gross Domestic Product: Implicit Price Deflator",
+          "units": "Index 2017=100",
+          "frequency": "Quarterly",
+          "count": 315,
+          "date_min": "1947-01-01T00:00:00+00:00",
+          "date_max": "2025-07-01T00:00:00+00:00",
+          "value_mean": 53.5367,
+          "value_min": 11.141,
+          "value_max": 129.428,
+          "value_latest": 129.428
+        }
+      }
+    }
+  },
+  {
+    "name": "fred_employment",
+    "type": "fred",
+    "description": "Employment, unemployment, and labor market indicators",
+    "meta": {
+      "record_count": 5836,
+      "first_fetched": "2026-01-22T13:43:34.507086",
+      "last_updated": "2026-01-22T13:43:34.507086",
+      "last_record_date": "2026-01-17T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "AWHAETP",
+        "CES0500000003",
+        "ICSA",
+        "JTSJOL",
+        "PAYEMS",
+        "UNRATE"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1939-01-01T00:00:00+00:00",
+        "max": "2026-01-17T00:00:00+00:00",
+        "days": 31793
+      },
+      "by_series": {
+        "AWHAETP": {
+          "title": "Average Weekly Hours of All Employees, Total Private",
+          "units": "Hours",
+          "frequency": "Monthly",
+          "count": 238,
+          "date_min": "2006-03-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 34.3891,
+          "value_min": 33.7,
+          "value_max": 35.0,
+          "value_latest": 34.2
+        },
+        "CES0500000003": {
+          "title": "Average Hourly Earnings of All Employees, Total Private",
+          "units": "Dollars per Hour",
+          "frequency": "Monthly",
+          "count": 238,
+          "date_min": "2006-03-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 26.6492,
+          "value_min": 20.05,
+          "value_max": 37.02,
+          "value_latest": 37.02
+        },
+        "ICSA": {
+          "title": "Initial Claims",
+          "units": "Number",
+          "frequency": "Weekly, Ending Saturday",
+          "count": 3081,
+          "date_min": "1967-01-07T00:00:00+00:00",
+          "date_max": "2026-01-17T00:00:00+00:00",
+          "value_mean": 360804.9335,
+          "value_min": 162000.0,
+          "value_max": 6137000.0,
+          "value_latest": 200000.0
+        },
+        "JTSJOL": {
+          "title": "Job Openings: Total Nonfarm",
+          "units": "Level in Thousands",
+          "frequency": "Monthly",
+          "count": 300,
+          "date_min": "2000-12-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 5481.4133,
+          "value_min": 2232.0,
+          "value_max": 12134.0,
+          "value_latest": 7146.0
+        },
+        "PAYEMS": {
+          "title": "All Employees, Total Nonfarm",
+          "units": "Thousands of Persons",
+          "frequency": "Monthly",
+          "count": 1044,
+          "date_min": "1939-01-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 93408.6398,
+          "value_min": 29923.0,
+          "value_max": 159593.0,
+          "value_latest": 159526.0
+        },
+        "UNRATE": {
+          "title": "Unemployment Rate",
+          "units": "Percent",
+          "frequency": "Monthly",
+          "count": 935,
+          "date_min": "1948-01-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 5.6665,
+          "value_min": 2.5,
+          "value_max": 14.8,
+          "value_latest": 4.4
+        }
+      }
+    }
+  },
+  {
+    "name": "fred_rates",
+    "type": "fred",
+    "description": "Federal Reserve rates and Treasury yields",
+    "meta": {
+      "record_count": 84982,
+      "first_fetched": "2026-01-22T13:44:06.040566",
+      "last_updated": "2026-01-22T13:44:06.040566",
+      "last_record_date": "2026-01-22T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "BAMLH0A0HYM2",
+        "DFEDTARL",
+        "DFEDTARU",
+        "DGS10",
+        "DGS2",
+        "DGS30",
+        "FEDFUNDS",
+        "T10Y2Y",
+        "T10Y3M"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1954-07-01T00:00:00+00:00",
+        "max": "2026-01-22T00:00:00+00:00",
+        "days": 26138
+      },
+      "by_series": {
+        "BAMLH0A0HYM2": {
+          "title": "ICE BofA US High Yield Index Option-Adjusted Spread",
+          "units": "Percent",
+          "frequency": "Daily, Close",
+          "count": 7585,
+          "date_min": "1996-12-31T00:00:00+00:00",
+          "date_max": "2026-01-20T00:00:00+00:00",
+          "value_mean": 5.2111,
+          "value_min": 2.41,
+          "value_max": 21.82,
+          "value_latest": 2.73
+        },
+        "DFEDTARL": {
+          "title": "Federal Funds Target Range - Lower Limit",
+          "units": "Percent",
+          "frequency": "Daily, 7-Day",
+          "count": 6247,
+          "date_min": "2008-12-16T00:00:00+00:00",
+          "date_max": "2026-01-22T00:00:00+00:00",
+          "value_mean": 1.231,
+          "value_min": 0.0,
+          "value_max": 5.25,
+          "value_latest": 3.5
+        },
+        "DFEDTARU": {
+          "title": "Federal Funds Target Range - Upper Limit",
+          "units": "Percent",
+          "frequency": "Daily, 7-Day",
+          "count": 6247,
+          "date_min": "2008-12-16T00:00:00+00:00",
+          "date_max": "2026-01-22T00:00:00+00:00",
+          "value_mean": 1.481,
+          "value_min": 0.25,
+          "value_max": 5.5,
+          "value_latest": 3.75
+        },
+        "DGS10": {
+          "title": "Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis",
+          "units": "Percent",
+          "frequency": "Daily",
+          "count": 15996,
+          "date_min": "1962-01-02T00:00:00+00:00",
+          "date_max": "2026-01-20T00:00:00+00:00",
+          "value_mean": 5.8191,
+          "value_min": 0.52,
+          "value_max": 15.84,
+          "value_latest": 4.3
+        },
+        "DGS2": {
+          "title": "Market Yield on U.S. Treasury Securities at 2-Year Constant Maturity, Quoted on an Investment Basis",
+          "units": "Percent",
+          "frequency": "Daily",
+          "count": 12404,
+          "date_min": "1976-06-01T00:00:00+00:00",
+          "date_max": "2026-01-20T00:00:00+00:00",
+          "value_mean": 4.9657,
+          "value_min": 0.09,
+          "value_max": 16.95,
+          "value_latest": 3.6
+        },
+        "DGS30": {
+          "title": "Market Yield on U.S. Treasury Securities at 30-Year Constant Maturity, Quoted on an Investment Basis",
+          "units": "Percent",
+          "frequency": "Daily",
+          "count": 12226,
+          "date_min": "1977-02-15T00:00:00+00:00",
+          "date_max": "2026-01-20T00:00:00+00:00",
+          "value_mean": 6.1706,
+          "value_min": 0.99,
+          "value_max": 15.21,
+          "value_latest": 4.91
+        },
+        "FEDFUNDS": {
+          "title": "Federal Funds Effective Rate",
+          "units": "Percent",
+          "frequency": "Monthly",
+          "count": 858,
+          "date_min": "1954-07-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 4.6038,
+          "value_min": 0.05,
+          "value_max": 19.1,
+          "value_latest": 3.72
+        },
+        "T10Y2Y": {
+          "title": "10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity",
+          "units": "Percent",
+          "frequency": "Daily",
+          "count": 12405,
+          "date_min": "1976-06-01T00:00:00+00:00",
+          "date_max": "2026-01-21T00:00:00+00:00",
+          "value_mean": 0.8498,
+          "value_min": -2.41,
+          "value_max": 2.91,
+          "value_latest": 0.66
+        },
+        "T10Y3M": {
+          "title": "10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity",
+          "units": "Percent",
+          "frequency": "Daily",
+          "count": 11014,
+          "date_min": "1982-01-04T00:00:00+00:00",
+          "date_max": "2026-01-21T00:00:00+00:00",
+          "value_mean": 1.5456,
+          "value_min": -1.89,
+          "value_max": 5.18,
+          "value_latest": 0.56
+        }
+      }
+    }
+  },
+  {
+    "name": "fred_money",
+    "type": "fred",
+    "description": "Monetary aggregates and credit conditions",
+    "meta": {
+      "record_count": 4609,
+      "first_fetched": "2026-01-22T13:46:30.307366",
+      "last_updated": "2026-01-22T13:46:30.307366",
+      "last_record_date": "2026-01-14T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "M1SL",
+        "M2SL",
+        "TOTALSL",
+        "TOTRESNS",
+        "WALCL"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1943-01-01T00:00:00+00:00",
+        "max": "2026-01-14T00:00:00+00:00",
+        "days": 30329
+      },
+      "by_series": {
+        "M1SL": {
+          "title": "M1",
+          "units": "Billions of Dollars",
+          "frequency": "Monthly",
+          "count": 803,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 2527.456,
+          "value_min": 138.9,
+          "value_max": 20727.2,
+          "value_latest": 19025.7
+        },
+        "M2SL": {
+          "title": "M2",
+          "units": "Billions of Dollars",
+          "frequency": "Monthly",
+          "count": 803,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 5656.6413,
+          "value_min": 286.6,
+          "value_max": 22322.4,
+          "value_latest": 22322.4
+        },
+        "TOTALSL": {
+          "title": "Total Consumer Credit Owned and Securitized",
+          "units": "Millions of U.S. Dollars",
+          "frequency": "Monthly",
+          "count": 995,
+          "date_min": "1943-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 1230814.2776,
+          "value_min": 5354.36,
+          "value_max": 5084831.24,
+          "value_latest": 5084831.24
+        },
+        "TOTRESNS": {
+          "title": "Reserves of Depository Institutions: Total",
+          "units": "Billions of Dollars",
+          "frequency": "Monthly",
+          "count": 803,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 636.1452,
+          "value_min": 18.0,
+          "value_max": 4193.2,
+          "value_latest": 2879.3
+        },
+        "WALCL": {
+          "title": "Assets: Total Assets: Total Assets (Less Eliminations from Consolidation): Wednesday Level",
+          "units": "Millions of U.S. Dollars",
+          "frequency": "Weekly, As of Wednesday",
+          "count": 1205,
+          "date_min": "2002-12-18T00:00:00+00:00",
+          "date_max": "2026-01-14T00:00:00+00:00",
+          "value_mean": 3918563.3444,
+          "value_min": 712809.0,
+          "value_max": 8965487.0,
+          "value_latest": 6581700.0
+        }
+      }
+    }
+  },
+  {
+    "name": "fred_housing",
+    "type": "fred",
+    "description": "Housing market indicators",
+    "meta": {
+      "record_count": 5685,
+      "first_fetched": "2026-01-22T13:46:45.913583",
+      "last_updated": "2026-01-22T13:46:45.913583",
+      "last_record_date": "2026-01-15T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "CSUSHPINSA",
+        "EXHOSLUSM495S",
+        "HOUST",
+        "HSN1F",
+        "MORTGAGE30US",
+        "PERMIT"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1959-01-01T00:00:00+00:00",
+        "max": "2026-01-15T00:00:00+00:00",
+        "days": 24486
+      },
+      "by_series": {
+        "CSUSHPINSA": {
+          "title": "S&P Cotality Case-Shiller U.S. National Home Price Index",
+          "units": "Index Jan 2000=100",
+          "frequency": "Monthly",
+          "count": 466,
+          "date_min": "1987-01-01T00:00:00+00:00",
+          "date_max": "2025-10-01T00:00:00+00:00",
+          "value_mean": 151.6393,
+          "value_min": 63.732,
+          "value_max": 331.627,
+          "value_latest": 328.442
+        },
+        "EXHOSLUSM495S": {
+          "title": "Existing Home Sales",
+          "units": "Number of Units",
+          "frequency": "Monthly",
+          "count": 13,
+          "date_min": "2024-12-01T00:00:00+00:00",
+          "date_max": "2025-12-01T00:00:00+00:00",
+          "value_mean": 4100000.0,
+          "value_min": 3930000.0,
+          "value_max": 4350000.0,
+          "value_latest": 4350000.0
+        },
+        "HOUST": {
+          "title": "New Privately-Owned Housing Units Started: Total Units",
+          "units": "Thousands of Units",
+          "frequency": "Monthly",
+          "count": 802,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-10-01T00:00:00+00:00",
+          "value_mean": 1431.2918,
+          "value_min": 478.0,
+          "value_max": 2494.0,
+          "value_latest": 1246.0
+        },
+        "HSN1F": {
+          "title": "New One Family Houses Sold: United States",
+          "units": "Thousands",
+          "frequency": "Monthly",
+          "count": 754,
+          "date_min": "1963-01-01T00:00:00+00:00",
+          "date_max": "2025-10-01T00:00:00+00:00",
+          "value_mean": 656.3435,
+          "value_min": 270.0,
+          "value_max": 1389.0,
+          "value_latest": 737.0
+        },
+        "MORTGAGE30US": {
+          "title": "30-Year Fixed Rate Mortgage Average in the United States",
+          "units": "Percent",
+          "frequency": "Weekly, Ending Thursday",
+          "count": 2860,
+          "date_min": "1971-04-02T00:00:00+00:00",
+          "date_max": "2026-01-15T00:00:00+00:00",
+          "value_mean": 7.6964,
+          "value_min": 2.65,
+          "value_max": 18.63,
+          "value_latest": 6.06
+        },
+        "PERMIT": {
+          "title": "New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units",
+          "units": "Thousands of Units",
+          "frequency": "Monthly",
+          "count": 790,
+          "date_min": "1960-01-01T00:00:00+00:00",
+          "date_max": "2025-10-01T00:00:00+00:00",
+          "value_mean": 1373.9253,
+          "value_min": 513.0,
+          "value_max": 2419.0,
+          "value_latest": 1412.0
+        }
+      }
+    }
+  },
+  {
+    "name": "fred_consumer",
+    "type": "fred",
+    "description": "Consumer spending and sentiment",
+    "meta": {
+      "record_count": 3477,
+      "first_fetched": "2026-01-22T13:46:56.801589",
+      "last_updated": "2026-01-22T13:46:56.801589",
+      "last_record_date": "2025-11-01T00:00:00",
+      "fetch_count": 1,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "series": [
+        "DSPIC96",
+        "PCE",
+        "PSAVERT",
+        "RSAFS",
+        "UMCSENT"
+      ]
+    },
+    "stats": {
+      "date_range": {
+        "min": "1952-11-01T00:00:00+00:00",
+        "max": "2025-11-01T00:00:00+00:00",
+        "days": 26663
+      },
+      "by_series": {
+        "DSPIC96": {
+          "title": "Real Disposable Personal Income",
+          "units": "Billions of Chained 2017 Dollars",
+          "frequency": "Monthly",
+          "count": 801,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-09-01T00:00:00+00:00",
+          "value_mean": 8539.2082,
+          "value_min": 2318.4,
+          "value_max": 20520.0,
+          "value_latest": 18040.2
+        },
+        "PCE": {
+          "title": "Personal Consumption Expenditures",
+          "units": "Billions of Dollars",
+          "frequency": "Monthly",
+          "count": 801,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-09-01T00:00:00+00:00",
+          "value_mean": 5984.532,
+          "value_min": 306.1,
+          "value_max": 21206.6,
+          "value_latest": 21206.6
+        },
+        "PSAVERT": {
+          "title": "Personal Saving Rate",
+          "units": "Percent",
+          "frequency": "Monthly",
+          "count": 801,
+          "date_min": "1959-01-01T00:00:00+00:00",
+          "date_max": "2025-09-01T00:00:00+00:00",
+          "value_mean": 8.4169,
+          "value_min": 1.4,
+          "value_max": 31.8,
+          "value_latest": 4.0
+        },
+        "RSAFS": {
+          "title": "Advance Retail Sales: Retail Trade and Food Services",
+          "units": "Millions of Dollars",
+          "frequency": "Monthly",
+          "count": 407,
+          "date_min": "1992-01-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 380768.145,
+          "value_min": 158647.0,
+          "value_max": 735904.0,
+          "value_latest": 735904.0
+        },
+        "UMCSENT": {
+          "title": "University of Michigan: Consumer Sentiment",
+          "units": "Index 1966:Q1=100",
+          "frequency": "Monthly",
+          "count": 667,
+          "date_min": "1952-11-01T00:00:00+00:00",
+          "date_max": "2025-11-01T00:00:00+00:00",
+          "value_mean": 84.8012,
+          "value_min": 50.0,
+          "value_max": 112.0,
+          "value_latest": 51.0
+        }
+      }
+    }
   }
 ]

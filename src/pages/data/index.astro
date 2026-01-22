@@ -9,17 +9,19 @@ const base = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : import.meta.env.BASE_URL + '/';
 
-// Sort datasets: OHLCV first, then RSS, alphabetically within each group
+// Sort datasets: OHLCV first, then FRED, then RSS, alphabetically within each group
+const typeOrder: Record<string, number> = { ohlcv: 0, fred: 1, rss: 2 };
 const sortedDatasets = [...datasets].sort((a, b) => {
-  if (a.type !== b.type) {
-    return a.type === 'ohlcv' ? -1 : 1;
-  }
+  const orderA = typeOrder[a.type] ?? 99;
+  const orderB = typeOrder[b.type] ?? 99;
+  if (orderA !== orderB) return orderA - orderB;
   return a.name.localeCompare(b.name);
 });
 
 // Calculate totals
 const totalRecords = datasets.reduce((sum, d) => sum + d.meta.record_count, 0);
 const ohlcvCount = datasets.filter(d => d.type === 'ohlcv').length;
+const fredCount = datasets.filter(d => d.type === 'fred').length;
 const rssCount = datasets.filter(d => d.type === 'rss').length;
 ---
 
@@ -53,6 +55,10 @@ const rssCount = datasets.filter(d => d.type === 'rss').length;
           <div class="stat-item">
             <span class="stat-value">{ohlcvCount}</span>
             <span class="stat-label">price datasets</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{fredCount}</span>
+            <span class="stat-label">economic indicators</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{rssCount}</span>

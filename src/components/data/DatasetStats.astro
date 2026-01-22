@@ -1,7 +1,7 @@
 ---
 interface Props {
   stats: any;
-  type: 'ohlcv' | 'rss';
+  type: 'ohlcv' | 'rss' | 'fred';
   meta: any;
 }
 
@@ -73,6 +73,37 @@ const formatDate = (dateStr: string) => {
           </div>
         ))}
       </div>
+    </div>
+  )}
+
+  {type === 'fred' && stats.by_series && (
+    <div class="series-table-wrapper">
+      <table class="series-table">
+        <thead>
+          <tr>
+            <th>Series</th>
+            <th>Title</th>
+            <th>Records</th>
+            <th>Latest</th>
+            <th>Mean</th>
+            <th>Min</th>
+            <th>Max</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(stats.by_series).map(([series_id, s]: [string, any]) => (
+            <tr>
+              <td class="series-id">{series_id}</td>
+              <td class="series-title" title={s.title}>{s.title?.slice(0, 40) || '—'}{s.title?.length > 40 ? '...' : ''}</td>
+              <td>{s.count}</td>
+              <td>{s.value_latest?.toLocaleString() ?? '—'}</td>
+              <td>{s.value_mean?.toLocaleString() ?? '—'}</td>
+              <td>{s.value_min?.toLocaleString() ?? '—'}</td>
+              <td>{s.value_max?.toLocaleString() ?? '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )}
 </div>
@@ -185,5 +216,62 @@ const formatDate = (dateStr: string) => {
     font-family: monospace;
     color: var(--accent);
     font-weight: 600;
+  }
+
+  .series-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .series-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .series-table th,
+  .series-table td {
+    padding: 0.625rem 0.75rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .series-table th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+
+  .series-table td {
+    color: var(--text-primary);
+    font-family: monospace;
+  }
+
+  .series-table td.series-id {
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .series-table td.series-title {
+    text-align: left;
+    font-family: inherit;
+    color: var(--text-secondary);
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .series-table th:first-child,
+  .series-table td:first-child,
+  .series-table th:nth-child(2),
+  .series-table td:nth-child(2) {
+    text-align: left;
+  }
+
+  .series-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
   }
 </style>

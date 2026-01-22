@@ -23,6 +23,10 @@ OHLCV_DATASETS = {
     "currencies", "commodities", "sector_etfs", "macro_proxies"
 }
 RSS_DATASETS = {"fed_news", "financial_news", "economics_news"}
+FRED_DATASETS = {
+    "fred_gdp", "fred_employment", "fred_inflation", "fred_rates",
+    "fred_money", "fred_housing", "fred_consumer"
+}
 
 
 def load_index() -> dict:
@@ -87,6 +91,68 @@ def prepare_ohlcv_dataset(name: str, df: pd.DataFrame, meta: dict) -> dict:
                 "days": (date_max - date_min).days,
             },
             "by_symbol": symbol_stats,
+        },
+        "data": sample_df.to_dict(orient='records'),
+    }
+
+
+def prepare_fred_dataset(name: str, df: pd.DataFrame, meta: dict) -> dict:
+    """Process FRED economic datasets."""
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['date'], utc=True)
+
+    # Get unique series
+    series_ids = sorted(df['series_id'].unique().tolist())
+
+    # Compute stats per series
+    series_stats = {}
+    for series_id in series_ids:
+        sdf = df[df['series_id'] == series_id]
+        title = sdf['title'].iloc[0] if 'title' in sdf.columns and len(sdf) > 0 else series_id
+        units = sdf['units'].iloc[0] if 'units' in sdf.columns and len(sdf) > 0 else ""
+        frequency = sdf['frequency'].iloc[0] if 'frequency' in sdf.columns and len(sdf) > 0 else ""
+        series_stats[series_id] = {
+            "title": title,
+            "units": units,
+            "frequency": frequency,
+            "count": len(sdf),
+            "date_min": sdf['date'].min().isoformat(),
+            "date_max": sdf['date'].max().isoformat(),
+            "value_mean": round(float(sdf['value'].mean()), 4),
+            "value_min": round(float(sdf['value'].min()), 4),
+            "value_max": round(float(sdf['value'].max()), 4),
+            "value_latest": round(float(sdf.sort_values('date').iloc[-1]['value']), 4),
+        }
+
+    # Overall date range
+    date_min = df['date'].min()
+    date_max = df['date'].max()
+
+    # Data for charts (all data, sorted)
+    sample_df = df.sort_values(['series_id', 'date'])[['series_id', 'date', 'value', 'title', 'units']]
+    sample_df['date'] = sample_df['date'].dt.strftime('%Y-%m-%d')
+
+    return {
+        "name": name,
+        "type": "fred",
+        "description": meta.get("description", ""),
+        "meta": {
+            "record_count": int(meta.get("record_count", len(df))),
+            "first_fetched": meta.get("first_fetched"),
+            "last_updated": meta.get("last_updated"),
+            "last_record_date": meta.get("last_record_date"),
+            "fetch_count": int(meta.get("fetch_count", 1)),
+            "columns": meta.get("columns", list(df.columns)),
+            "primary_keys": meta.get("primary_keys", []),
+            "series": series_ids,
+        },
+        "stats": {
+            "date_range": {
+                "min": date_min.isoformat(),
+                "max": date_max.isoformat(),
+                "days": (date_max - date_min).days,
+            },
+            "by_series": series_stats,
         },
         "data": sample_df.to_dict(orient='records'),
     }
@@ -186,6 +252,8 @@ def main():
             dataset = prepare_ohlcv_dataset(name, df, meta)
         elif name in RSS_DATASETS:
             dataset = prepare_rss_dataset(name, df, meta)
+        elif name in FRED_DATASETS:
+            dataset = prepare_fred_dataset(name, df, meta)
         else:
             print(f"  Unknown dataset type for {name}, skipping")
             continue

@@ -18,15 +18,28 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			.hero {
+				width: 100%;
+				max-width: 1024px;
+				margin: 0 auto;
+				padding: 0 1rem;
+			}
+			.hero-img {
+				width: 100%;
+				height: auto;
+				border-radius: 8px;
+			}
 			main {
 				max-width: 720px;
 				margin: 0 auto;
 				padding: 2rem;
 			}
-			h1 {
-				font-size: 2.5rem;
-				margin-bottom: 1rem;
-				color: var(--text-heading);
+			.tagline {
+				font-size: 1.25rem;
+				line-height: 1.6;
+				color: var(--text-secondary);
+				margin-bottom: 2rem;
+				text-align: center;
 			}
 			p {
 				font-size: 1.125rem;
@@ -112,12 +125,12 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
 	</head>
 	<body>
 		<Header />
+		<div class="hero">
+			<img src={`${base}derpledex_brand_pack/hero_3x1_1024x341.png`} alt="The DerpleDex" class="hero-img" />
+		</div>
 		<main>
-			<h1>the derple-dex</h1>
-			<p>
+			<p class="tagline">
 				Technical blog and project showcase by Ken Eldridge.
-			</p>
-			<p>
 				Exploring music, data, and code.
 			</p>
 

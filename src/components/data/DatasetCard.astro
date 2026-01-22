@@ -2,7 +2,7 @@
 interface Props {
   name: string;
   description: string;
-  type: 'ohlcv' | 'rss';
+  type: 'ohlcv' | 'rss' | 'fred';
   recordCount: number;
   lastUpdated: string;
   href: string;
@@ -19,8 +19,13 @@ const formattedDate = updated.toLocaleDateString('en-US', {
 });
 
 // Type badge
-const typeLabel = type === 'ohlcv' ? 'Price Data' : 'News Feed';
-const typeClass = type === 'ohlcv' ? 'type-ohlcv' : 'type-rss';
+const typeLabels: Record<string, string> = {
+  ohlcv: 'Price Data',
+  fred: 'Economic Data',
+  rss: 'News Feed'
+};
+const typeLabel = typeLabels[type] || type;
+const typeClass = `type-${type}`;
 ---
 
 <a href={href} class="dataset-card">
@@ -85,6 +90,11 @@ const typeClass = type === 'ohlcv' ? 'type-ohlcv' : 'type-rss';
   .type-rss {
     background: rgba(59, 130, 246, 0.2);
     color: #3b82f6;
+  }
+
+  .type-fred {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
   }
 
   .description {
