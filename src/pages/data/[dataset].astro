@@ -24,7 +24,8 @@ const base = import.meta.env.BASE_URL.endsWith('/')
 // Type label
 const typeLabels: Record<string, string> = {
   ohlcv: 'Price Data',
-  fred: 'Economic Data',
+  fred: 'FRED Data',
+  bls: 'BLS Data',
   rss: 'News Feed'
 };
 const typeLabel = typeLabels[dataset.type] || dataset.type;
@@ -80,7 +81,7 @@ const typeClass = `type-${dataset.type}`;
         />
       )}
 
-      {dataset.type === 'fred' && dataset.meta.series && (
+      {(dataset.type === 'fred' || dataset.type === 'bls') && dataset.meta.series && (
         <FredPlot
           datasetName={dataset.name}
           series={dataset.meta.series}
@@ -179,6 +180,11 @@ const typeClass = `type-${dataset.type}`;
   .type-fred {
     background: rgba(168, 85, 247, 0.2);
     color: #a855f7;
+  }
+
+  .type-bls {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
   }
 
   .description {

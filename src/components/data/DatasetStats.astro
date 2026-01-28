@@ -1,7 +1,7 @@
 ---
 interface Props {
   stats: any;
-  type: 'ohlcv' | 'rss' | 'fred';
+  type: 'ohlcv' | 'rss' | 'fred' | 'bls';
   meta: any;
 }
 
@@ -76,7 +76,7 @@ const formatDate = (dateStr: string) => {
     </div>
   )}
 
-  {type === 'fred' && stats.by_series && (
+  {(type === 'fred' || type === 'bls') && stats.by_series && (
     <div class="series-table-wrapper">
       <table class="series-table">
         <thead>

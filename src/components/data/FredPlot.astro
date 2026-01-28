@@ -53,7 +53,7 @@ const dataUrl = `${base}data/${datasetName}.json`;
 
   waitForPlotly(function() {
     document.querySelectorAll('.plot-container').forEach(container => {
-      if (!container.id.startsWith('plot-fred_')) return;
+      if (!container.id.startsWith('plot-fred_') && !container.id.startsWith('plot-bls_')) return;
 
       const datasetName = container.id.replace('plot-', '');
       const dataUrl = container.dataset.url;

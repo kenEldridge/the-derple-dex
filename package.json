@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "prepare-data": "python3 scripts/prepare-data.py",
+    "prepare-data": "python3 scripts/prepare-data-v2.py",
     "dev": "astro dev",
     "build": "npm run prepare-data && astro build",
     "preview": "astro preview",

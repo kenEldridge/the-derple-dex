@@ -9,8 +9,8 @@ const base = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : import.meta.env.BASE_URL + '/';
 
-// Sort datasets: OHLCV first, then FRED, then RSS, alphabetically within each group
-const typeOrder: Record<string, number> = { ohlcv: 0, fred: 1, rss: 2 };
+// Sort datasets: OHLCV first, then FRED, then BLS, then RSS, alphabetically within each group
+const typeOrder: Record<string, number> = { ohlcv: 0, fred: 1, bls: 2, rss: 3 };
 const sortedDatasets = [...datasets].sort((a, b) => {
   const orderA = typeOrder[a.type] ?? 99;
   const orderB = typeOrder[b.type] ?? 99;
@@ -22,6 +22,7 @@ const sortedDatasets = [...datasets].sort((a, b) => {
 const totalRecords = datasets.reduce((sum, d) => sum + d.meta.record_count, 0);
 const ohlcvCount = datasets.filter(d => d.type === 'ohlcv').length;
 const fredCount = datasets.filter(d => d.type === 'fred').length;
+const blsCount = datasets.filter(d => d.type === 'bls').length;
 const rssCount = datasets.filter(d => d.type === 'rss').length;
 ---
 
@@ -58,7 +59,11 @@ const rssCount = datasets.filter(d => d.type === 'rss').length;
           </div>
           <div class="stat-item">
             <span class="stat-value">{fredCount}</span>
-            <span class="stat-label">economic indicators</span>
+            <span class="stat-label">FRED series</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{blsCount}</span>
+            <span class="stat-label">BLS series</span>
           </div>
           <div class="stat-item">
             <span class="stat-value">{rssCount}</span>

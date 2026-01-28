@@ -1,0 +1,15 @@
+# Define your data sources here.
+# Each source uses a built-in type (yfinance, fred, bls, rss, scraping, etc.)
+# See: cdata sources types
+#
+# sources:
+#   - id: my_stocks
+#     name: "My Stock Watchlist"
+#     type: yfinance
+#     enabled: true
+#     config:
+#       symbols: [AAPL, MSFT, GOOG]
+#       period: "1y"
+#       interval: "1d"
+
+sources: []

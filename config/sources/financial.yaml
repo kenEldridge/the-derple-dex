@@ -1,0 +1,495 @@
+# Financial & Macroeconomic Data Sources for the-derple-dex
+# Focus: US and global markets, fiscal/monetary policy, macro indicators
+
+sources:
+  # ===================
+  # US EQUITY INDICES
+  # ===================
+  - id: us_indices
+    name: "US Market Indices"
+    type: yfinance
+    enabled: true
+    description: "Major US equity indices"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - ^GSPC       # S&P 500
+        - ^DJI        # Dow Jones Industrial
+        - ^IXIC       # NASDAQ Composite
+        - ^RUT        # Russell 2000 (small cap)
+        - ^VIX        # Volatility Index
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # GLOBAL EQUITY INDICES
+  # ===================
+  - id: global_indices
+    name: "Global Market Indices"
+    type: yfinance
+    enabled: true
+    description: "Major international equity indices"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - ^FTSE       # UK FTSE 100
+        - ^GDAXI      # Germany DAX
+        - ^FCHI       # France CAC 40
+        - ^N225       # Japan Nikkei 225
+        - ^HSI        # Hong Kong Hang Seng
+        - ^STOXX50E   # Euro Stoxx 50
+        - FXI         # China Large-Cap ETF
+        - EEM         # Emerging Markets ETF
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # US TREASURY YIELDS
+  # ===================
+  - id: treasury_yields
+    name: "US Treasury Yields"
+    type: yfinance
+    enabled: true
+    description: "Treasury yield curve data"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - ^IRX        # 13-week T-Bill
+        - ^FVX        # 5-year Treasury
+        - ^TNX        # 10-year Treasury
+        - ^TYX        # 30-year Treasury
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # BOND ETFs
+  # ===================
+  - id: bond_etfs
+    name: "Bond ETFs"
+    type: yfinance
+    enabled: true
+    description: "Fixed income ETFs across durations and types"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - TLT         # 20+ Year Treasury
+        - IEF         # 7-10 Year Treasury
+        - SHY         # 1-3 Year Treasury
+        - AGG         # US Aggregate Bond
+        - LQD         # Investment Grade Corporate
+        - HYG         # High Yield Corporate
+        - TIP         # TIPS (inflation-protected)
+        - MUB         # Municipal Bonds
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # CURRENCIES & DOLLAR
+  # ===================
+  - id: currencies
+    name: "Currencies & Dollar Index"
+    type: yfinance
+    enabled: true
+    description: "Dollar strength and major currency pairs"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - DX-Y.NYB    # US Dollar Index
+        - EURUSD=X    # Euro/USD
+        - GBPUSD=X    # British Pound/USD
+        - USDJPY=X    # USD/Japanese Yen
+        - USDCNY=X    # USD/Chinese Yuan
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # COMMODITIES
+  # ===================
+  - id: commodities
+    name: "Commodities"
+    type: yfinance
+    enabled: true
+    description: "Key commodity prices"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - GC=F        # Gold Futures
+        - SI=F        # Silver Futures
+        - CL=F        # Crude Oil (WTI)
+        - BZ=F        # Brent Crude
+        - NG=F        # Natural Gas
+        - HG=F        # Copper
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # SECTOR ETFs
+  # ===================
+  - id: sector_etfs
+    name: "US Sector ETFs"
+    type: yfinance
+    enabled: true
+    description: "S&P 500 sector performance"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - XLF         # Financials
+        - XLK         # Technology
+        - XLE         # Energy
+        - XLV         # Healthcare
+        - XLI         # Industrials
+        - XLP         # Consumer Staples
+        - XLY         # Consumer Discretionary
+        - XLU         # Utilities
+        - XLB         # Materials
+        - XLRE        # Real Estate
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # MACRO INDICATOR PROXIES
+  # ===================
+  - id: macro_proxies
+    name: "Macro Indicator Proxies"
+    type: yfinance
+    enabled: true
+    description: "ETFs that track macro themes"
+    primary_keys: ["symbol", "date"]
+    incremental: true
+    config:
+      symbols:
+        - SPY         # S&P 500 ETF (market benchmark)
+        - QQQ         # NASDAQ 100 (tech/growth)
+        - IWM         # Russell 2000 (small cap/domestic)
+        - DBA         # Agriculture
+        - UUP         # Dollar Bullish
+        - GLD         # Gold (inflation hedge)
+        - GOVT        # US Treasuries
+      period: "1y"
+      interval: "1d"
+
+  # ===================
+  # FEDERAL RESERVE & POLICY NEWS
+  # ===================
+  - id: fed_news
+    name: "Federal Reserve News"
+    type: rss
+    enabled: true
+    description: "Federal Reserve announcements and speeches"
+    primary_keys: ["id"]
+    config:
+      feeds:
+        - name: Federal Reserve Press Releases
+          url: https://www.federalreserve.gov/feeds/press_all.xml
+        - name: Fed Speeches
+          url: https://www.federalreserve.gov/feeds/speeches.xml
+
+  # ===================
+  # FINANCIAL NEWS
+  # ===================
+  - id: financial_news
+    name: "Financial News"
+    type: rss
+    enabled: true
+    description: "Market and economic news feeds"
+    primary_keys: ["id"]
+    config:
+      feeds:
+        - name: Yahoo Finance
+          url: https://finance.yahoo.com/news/rssindex
+        - name: Seeking Alpha Market News
+          url: https://seekingalpha.com/market_currents.xml
+        - name: CNBC Top News
+          url: https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114
+
+  # ===================
+  # ECONOMIC DATA NEWS
+  # ===================
+  - id: economics_news
+    name: "Economics & Policy News"
+    type: rss
+    enabled: true
+    description: "Economic analysis and policy coverage"
+    primary_keys: ["id"]
+    config:
+      feeds:
+        - name: Calculated Risk
+          url: https://www.calculatedriskblog.com/feeds/posts/default?alt=rss
+        - name: Marginal Revolution
+          url: https://marginalrevolution.com/feed
+
+  # ===================
+  # FRED - MACRO INDICATORS
+  # ===================
+  - id: fred_gdp
+    name: "GDP & Output"
+    type: fred
+    enabled: true
+    description: "Gross Domestic Product and related measures"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - GDP           # Gross Domestic Product
+        - GDPC1         # Real GDP
+        - A191RL1Q225SBEA  # Real GDP growth rate
+        - GDPDEF        # GDP Deflator
+
+  - id: fred_employment
+    name: "Employment & Labor"
+    type: fred
+    enabled: true
+    description: "Employment, unemployment, and labor market indicators"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - UNRATE        # Unemployment Rate
+        - PAYEMS        # Total Nonfarm Payrolls
+        - ICSA          # Initial Jobless Claims
+        - JTSJOL        # Job Openings (JOLTS)
+        - AWHAETP       # Avg Weekly Hours
+        - CES0500000003 # Avg Hourly Earnings
+
+  - id: fred_inflation
+    name: "Inflation & Prices"
+    type: fred
+    enabled: true
+    description: "Consumer and producer price indices"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - CPIAUCSL      # CPI All Items
+        - CPILFESL      # Core CPI (ex food & energy)
+        - PCEPI         # PCE Price Index
+        - PCEPILFE      # Core PCE
+        - PPIACO        # PPI All Commodities
+        - MICH          # U Michigan Inflation Expectations
+
+  - id: fred_rates
+    name: "Interest Rates & Yields"
+    type: fred
+    enabled: true
+    description: "Federal Reserve rates and Treasury yields"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - FEDFUNDS      # Fed Funds Rate
+        - DFEDTARU      # Fed Funds Target Upper
+        - DFEDTARL      # Fed Funds Target Lower
+        - DGS2          # 2-Year Treasury
+        - DGS10         # 10-Year Treasury
+        - DGS30         # 30-Year Treasury
+        - T10Y2Y        # 10Y-2Y Spread
+        - T10Y3M        # 10Y-3M Spread
+        - BAMLH0A0HYM2  # High Yield Spread
+
+  - id: fred_money
+    name: "Money Supply & Credit"
+    type: fred
+    enabled: true
+    description: "Monetary aggregates and credit conditions"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - M1SL          # M1 Money Stock
+        - M2SL          # M2 Money Stock
+        - WALCL         # Fed Balance Sheet
+        - TOTRESNS      # Total Reserves
+        - TOTALSL       # Consumer Credit
+
+  - id: fred_housing
+    name: "Housing & Real Estate"
+    type: fred
+    enabled: true
+    description: "Housing market indicators"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - HOUST         # Housing Starts
+        - PERMIT        # Building Permits
+        - HSN1F         # New Home Sales
+        - EXHOSLUSM495S # Existing Home Sales
+        - CSUSHPINSA    # Case-Shiller Home Price Index
+        - MORTGAGE30US  # 30-Year Mortgage Rate
+
+  - id: fred_consumer
+    name: "Consumer & Retail"
+    type: fred
+    enabled: true
+    description: "Consumer spending and sentiment"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - RSAFS         # Retail Sales
+        - PCE           # Personal Consumption Expenditures
+        - PSAVERT       # Personal Saving Rate
+        - UMCSENT       # U Michigan Consumer Sentiment
+        - DSPIC96       # Real Disposable Income
+
+  - id: fred_banking
+    name: "Banking & Credit (H.8)"
+    type: fred
+    enabled: true
+    description: "H.8 commercial banking data and credit conditions"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - TOTBKCR       # Bank Credit, All Commercial Banks
+        - BUSLOANS      # Commercial and Industrial Loans
+        - CONSUMER      # Consumer Loans
+        - RESIDUAL      # Other Loans and Leases
+        - TOTLL         # Loans and Leases in Bank Credit
+        - DPSACBW027SBOG  # Deposits, All Commercial Banks
+        - RCFD2170      # Total Assets (call report)
+
+  - id: fred_stress_index
+    name: "Financial Stress Indices"
+    type: fred
+    enabled: true
+    description: "Composite financial stress and conditions indicators"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - STLFSI2       # St. Louis Fed Financial Stress Index
+        - NFCI          # Chicago Fed National Financial Conditions Index
+        - CFSI          # Cleveland Financial Stress Index
+
+  - id: fred_mev
+    name: "Macro Scenario Variables (MEV)"
+    type: fred
+    enabled: true
+    description: "Key macroeconomic variables used in stress test scenario design"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - GDPC1         # Real GDP
+        - UNRATE        # Unemployment Rate
+        - CPIAUCSL      # CPI All Items
+        - DGS10         # 10-Year Treasury Yield
+        - CSUSHPINSA    # Case-Shiller Home Price Index
+        - MORTGAGE30US  # 30-Year Mortgage Rate
+        - DTWEXBGS      # Trade Weighted Dollar Index (Broad)
+        - VIXCLS        # CBOE Volatility Index (daily)
+
+  - id: fred_market
+    name: "Market Snapshot"
+    type: fred
+    enabled: true
+    description: "Broad market indicators and risk measures"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - SP500         # S&P 500
+        - VIXCLS        # CBOE Volatility Index
+        - DTWEXBGS      # Trade Weighted Dollar Index (Broad)
+        - BAMLH0A0HYM2  # ICE BofA High Yield Spread
+        - BAMLC0A0CM    # ICE BofA Corporate Master Spread
+        - TEDRATE       # TED Spread
+        - T10YIE        # 10-Year Breakeven Inflation Rate
+
+  # ===================
+  # BLS - LABOR STATISTICS
+  # ===================
+  - id: bls_cpi
+    name: "BLS Consumer Price Index"
+    type: bls
+    enabled: true
+    description: "CPI inflation measures from Bureau of Labor Statistics"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - CUSR0000SA0     # CPI All Items (Seasonally Adjusted)
+        - CUSR0000SA0L1E  # Core CPI (ex food & energy)
+        - CUUR0000SA0     # CPI All Items (Not Seasonally Adjusted)
+
+  - id: bls_employment
+    name: "BLS Employment"
+    type: bls
+    enabled: true
+    description: "Employment and unemployment from Bureau of Labor Statistics"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - LNS14000000     # Unemployment Rate
+        - LNS11000000     # Labor Force Participation Rate
+        - CES0000000001   # Total Nonfarm Employment
+        - CES0500000001   # Total Private Employment
+
+  - id: bls_wages
+    name: "BLS Wages & Earnings"
+    type: bls
+    enabled: true
+    description: "Wage and earnings data from Bureau of Labor Statistics"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - CES0500000003   # Average Hourly Earnings (Private)
+        - CES0500000011   # Average Weekly Earnings (Private)
+
+  - id: bls_ppi
+    name: "BLS Producer Price Index"
+    type: bls
+    enabled: true
+    description: "Producer prices from Bureau of Labor Statistics"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - WPUFD4          # PPI Finished Goods
+        - WPSFD4          # PPI Finished Goods (Seasonally Adjusted)
+        - WPUFD49104      # PPI Finished Core Goods
+
+  - id: bls_jolts
+    name: "BLS JOLTS"
+    type: bls
+    enabled: true
+    description: "Job Openings and Labor Turnover Survey"
+    primary_keys: ["series_id", "date"]
+    incremental: true
+    config:
+      series:
+        - JTS000000000000000JOL  # Job Openings Total Nonfarm
+        - JTS000000000000000HIR  # Hires Total Nonfarm
+        - JTS000000000000000QUL  # Quits Total Nonfarm
+        - JTS000000000000000TSL  # Total Separations
+
+  # ===================
+  # FED STRESS TEST SCENARIOS
+  # ===================
+  - id: fed_stress_scenarios
+    name: "Fed Stress Test Scenarios"
+    type: fed_stress
+    enabled: true
+    description: "Federal Reserve DFAST supervisory stress test scenarios (baseline & severely adverse)"
+    primary_keys: ["year", "table", "date"]
+    config:
+      years:
+        - 2024
+        - 2025
+      scenarios:
+        - baseline_domestic
+        - baseline_international
+        - severely_adverse_domestic
+        - severely_adverse_international
+        - historic_domestic
+        - historic_international
