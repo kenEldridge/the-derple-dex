@@ -23,9 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# cdata generated files (regenerated from sources)
-data/
-
 # generated JSON data files (build artifacts)
 public/data/
 

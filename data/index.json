@@ -1,0 +1,839 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-01-26T22:13:53.330393",
+  "datasets": {
+    "raw/fed_news": {
+      "name": "fed_news",
+      "source_id": "fed_news",
+      "location": "raw",
+      "file_path": "data/raw/fed_news.parquet",
+      "format": "parquet",
+      "record_count": 35,
+      "file_size_bytes": 13461,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "feed_name",
+        "feed_url",
+        "title",
+        "link",
+        "summary",
+        "author",
+        "published",
+        "id"
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "first_fetched": "2026-01-21T12:05:41.216493",
+      "last_updated": "2026-01-26T22:12:42.204295",
+      "last_record_date": "2026-01-16T20:30:00",
+      "fetch_count": 3,
+      "description": "Federal Reserve announcements and speeches"
+    },
+    "raw/financial_news": {
+      "name": "financial_news",
+      "source_id": "financial_news",
+      "location": "raw",
+      "file_path": "data/raw/financial_news.parquet",
+      "format": "parquet",
+      "record_count": 165,
+      "file_size_bytes": 39901,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "feed_name",
+        "feed_url",
+        "title",
+        "link",
+        "summary",
+        "author",
+        "published",
+        "id"
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "first_fetched": "2026-01-21T12:06:13.758470",
+      "last_updated": "2026-01-26T22:12:43.387337",
+      "last_record_date": "2026-01-26T22:12:27",
+      "fetch_count": 3,
+      "description": "Market and economic news feeds"
+    },
+    "raw/economics_news": {
+      "name": "economics_news",
+      "source_id": "economics_news",
+      "location": "raw",
+      "file_path": "data/raw/economics_news.parquet",
+      "format": "parquet",
+      "record_count": 55,
+      "file_size_bytes": 61520,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "feed_name",
+        "feed_url",
+        "title",
+        "link",
+        "summary",
+        "author",
+        "published",
+        "id"
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "first_fetched": "2026-01-21T12:06:53.950911",
+      "last_updated": "2026-01-26T22:12:46.775306",
+      "last_record_date": "2026-01-26T18:26:45",
+      "fetch_count": 3,
+      "description": "Economic analysis and policy coverage"
+    },
+    "raw/us_indices": {
+      "name": "us_indices",
+      "source_id": "us_indices",
+      "location": "raw",
+      "file_path": "data/raw/us_indices.parquet",
+      "format": "parquet",
+      "record_count": 65819,
+      "file_size_bytes": 2678441,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-21T16:47:09.482538",
+      "last_updated": "2026-01-26T22:05:28.183799",
+      "last_record_date": "2026-01-26T00:00:00-06:00",
+      "fetch_count": 2,
+      "description": "Major US equity indices"
+    },
+    "raw/global_indices": {
+      "name": "global_indices",
+      "source_id": "global_indices",
+      "location": "raw",
+      "file_path": "data/raw/global_indices.parquet",
+      "format": "parquet",
+      "record_count": 69832,
+      "file_size_bytes": 3430825,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-21T16:47:44.758694",
+      "last_updated": "2026-01-26T22:12:29.084302",
+      "last_record_date": "2026-01-26T00:00:00-05:00",
+      "fetch_count": 3,
+      "description": "Major international equity indices"
+    },
+    "raw/treasury_yields": {
+      "name": "treasury_yields",
+      "source_id": "treasury_yields",
+      "location": "raw",
+      "file_path": "data/raw/treasury_yields.parquet",
+      "format": "parquet",
+      "record_count": 60853,
+      "file_size_bytes": 1255761,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-21T16:48:03.109092",
+      "last_updated": "2026-01-26T22:05:31.421334",
+      "last_record_date": "2026-01-26T00:00:00-06:00",
+      "fetch_count": 2,
+      "description": "Treasury yield curve data"
+    },
+    "raw/bond_etfs": {
+      "name": "bond_etfs",
+      "source_id": "bond_etfs",
+      "location": "raw",
+      "file_path": "data/raw/bond_etfs.parquet",
+      "format": "parquet",
+      "record_count": 44183,
+      "file_size_bytes": 2325901,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-21T16:48:21.823915",
+      "last_updated": "2026-01-26T22:05:33.401743",
+      "last_record_date": "2026-01-26T00:00:00-05:00",
+      "fetch_count": 2,
+      "description": "Fixed income ETFs across durations and types"
+    },
+    "raw/currencies": {
+      "name": "currencies",
+      "source_id": "currencies",
+      "location": "raw",
+      "file_path": "data/raw/currencies.parquet",
+      "format": "parquet",
+      "record_count": 39219,
+      "file_size_bytes": 1281138,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-21T16:48:37.704856",
+      "last_updated": "2026-01-26T22:05:34.660107",
+      "last_record_date": "2026-01-26T00:00:00-05:00",
+      "fetch_count": 2,
+      "description": "Dollar strength and major currency pairs"
+    },
+    "raw/commodities": {
+      "name": "commodities",
+      "source_id": "commodities",
+      "location": "raw",
+      "file_path": "data/raw/commodities.parquet",
+      "format": "parquet",
+      "record_count": 36493,
+      "file_size_bytes": 1306502,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T02:22:21.839236",
+      "last_updated": "2026-01-26T22:05:36.053493",
+      "last_record_date": "2026-01-26T00:00:00-05:00",
+      "fetch_count": 2,
+      "description": "Key commodity prices"
+    },
+    "raw/sector_etfs": {
+      "name": "sector_etfs",
+      "source_id": "sector_etfs",
+      "location": "raw",
+      "file_path": "data/raw/sector_etfs.parquet",
+      "format": "parquet",
+      "record_count": 63915,
+      "file_size_bytes": 3435310,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T02:22:44.806863",
+      "last_updated": "2026-01-26T22:05:38.340178",
+      "last_record_date": "2026-01-26T00:00:00-05:00",
+      "fetch_count": 2,
+      "description": "S&P 500 sector performance"
+    },
+    "raw/macro_proxies": {
+      "name": "macro_proxies",
+      "source_id": "macro_proxies",
+      "location": "raw",
+      "file_path": "data/raw/macro_proxies.parquet",
+      "format": "parquet",
+      "record_count": 39900,
+      "file_size_bytes": 2105571,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "primary_keys": [
+        "symbol",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T02:23:06.362534",
+      "last_updated": "2026-01-26T22:05:40.038426",
+      "last_record_date": "2026-01-26T00:00:00-05:00",
+      "fetch_count": 2,
+      "description": "ETFs that track macro themes"
+    },
+    "raw/fred_inflation": {
+      "name": "fred_inflation",
+      "source_id": "fred_inflation",
+      "location": "raw",
+      "file_path": "data/raw/fred_inflation.parquet",
+      "format": "parquet",
+      "record_count": 5307,
+      "file_size_bytes": 79335,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:41:24.922814",
+      "last_updated": "2026-01-26T22:12:55.798729",
+      "last_record_date": "2025-12-01T00:00:00",
+      "fetch_count": 2,
+      "description": "Consumer and producer price indices"
+    },
+    "raw/fred_gdp": {
+      "name": "fred_gdp",
+      "source_id": "fred_gdp",
+      "location": "raw",
+      "file_path": "data/raw/fred_gdp.parquet",
+      "format": "parquet",
+      "record_count": 1259,
+      "file_size_bytes": 25098,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:43:24.229075",
+      "last_updated": "2026-01-26T22:12:49.986748",
+      "last_record_date": "2025-07-01T00:00:00",
+      "fetch_count": 2,
+      "description": "Gross Domestic Product and related measures"
+    },
+    "raw/fred_employment": {
+      "name": "fred_employment",
+      "source_id": "fred_employment",
+      "location": "raw",
+      "file_path": "data/raw/fred_employment.parquet",
+      "format": "parquet",
+      "record_count": 5836,
+      "file_size_bytes": 92940,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:43:34.507086",
+      "last_updated": "2026-01-22T13:43:34.507086",
+      "last_record_date": "2026-01-17T00:00:00",
+      "fetch_count": 1,
+      "description": "Employment, unemployment, and labor market indicators"
+    },
+    "raw/fred_rates": {
+      "name": "fred_rates",
+      "source_id": "fred_rates",
+      "location": "raw",
+      "file_path": "data/raw/fred_rates.parquet",
+      "format": "parquet",
+      "record_count": 84998,
+      "file_size_bytes": 966174,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:44:06.040566",
+      "last_updated": "2026-01-26T22:13:04.175644",
+      "last_record_date": "2026-01-26T00:00:00",
+      "fetch_count": 2,
+      "description": "Federal Reserve rates and Treasury yields"
+    },
+    "raw/fred_money": {
+      "name": "fred_money",
+      "source_id": "fred_money",
+      "location": "raw",
+      "file_path": "data/raw/fred_money.parquet",
+      "format": "parquet",
+      "record_count": 4610,
+      "file_size_bytes": 82794,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:46:30.307366",
+      "last_updated": "2026-01-26T22:13:06.394997",
+      "last_record_date": "2026-01-21T00:00:00",
+      "fetch_count": 2,
+      "description": "Monetary aggregates and credit conditions"
+    },
+    "raw/fred_housing": {
+      "name": "fred_housing",
+      "source_id": "fred_housing",
+      "location": "raw",
+      "file_path": "data/raw/fred_housing.parquet",
+      "format": "parquet",
+      "record_count": 5686,
+      "file_size_bytes": 91017,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:46:45.913583",
+      "last_updated": "2026-01-26T22:13:08.680061",
+      "last_record_date": "2026-01-22T00:00:00",
+      "fetch_count": 2,
+      "description": "Housing market indicators"
+    },
+    "raw/fred_consumer": {
+      "name": "fred_consumer",
+      "source_id": "fred_consumer",
+      "location": "raw",
+      "file_path": "data/raw/fred_consumer.parquet",
+      "format": "parquet",
+      "record_count": 3481,
+      "file_size_bytes": 52969,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-22T13:46:56.801589",
+      "last_updated": "2026-01-26T22:13:12.212318",
+      "last_record_date": "2025-12-01T00:00:00",
+      "fetch_count": 2,
+      "description": "Consumer spending and sentiment"
+    },
+    "raw/bls_cpi": {
+      "name": "bls_cpi",
+      "source_id": "bls_cpi",
+      "location": "raw",
+      "file_path": "data/raw/bls_cpi.parquet",
+      "format": "parquet",
+      "record_count": 321,
+      "file_size_bytes": 11941,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency",
+        "period",
+        "year"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-23T15:54:29.470063",
+      "last_updated": "2026-01-23T15:54:29.470063",
+      "last_record_date": "2025-12-01T00:00:00",
+      "fetch_count": 1,
+      "description": "CPI inflation measures from Bureau of Labor Statistics"
+    },
+    "raw/bls_employment": {
+      "name": "bls_employment",
+      "source_id": "bls_employment",
+      "location": "raw",
+      "file_path": "data/raw/bls_employment.parquet",
+      "format": "parquet",
+      "record_count": 430,
+      "file_size_bytes": 12627,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency",
+        "period",
+        "year"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-23T15:54:48.901447",
+      "last_updated": "2026-01-23T15:54:48.901447",
+      "last_record_date": "2025-12-01T00:00:00",
+      "fetch_count": 1,
+      "description": "Employment and unemployment from Bureau of Labor Statistics"
+    },
+    "raw/bls_wages": {
+      "name": "bls_wages",
+      "source_id": "bls_wages",
+      "location": "raw",
+      "file_path": "data/raw/bls_wages.parquet",
+      "format": "parquet",
+      "record_count": 216,
+      "file_size_bytes": 10134,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency",
+        "period",
+        "year"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-23T15:55:00.065768",
+      "last_updated": "2026-01-23T15:55:00.065768",
+      "last_record_date": "2025-12-01T00:00:00",
+      "fetch_count": 1,
+      "description": "Wage and earnings data from Bureau of Labor Statistics"
+    },
+    "raw/bls_ppi": {
+      "name": "bls_ppi",
+      "source_id": "bls_ppi",
+      "location": "raw",
+      "file_path": "data/raw/bls_ppi.parquet",
+      "format": "parquet",
+      "record_count": 321,
+      "file_size_bytes": 11412,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency",
+        "period",
+        "year"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-23T15:55:08.675049",
+      "last_updated": "2026-01-23T15:55:08.675049",
+      "last_record_date": "2025-11-01T00:00:00",
+      "fetch_count": 1,
+      "description": "Producer prices from Bureau of Labor Statistics"
+    },
+    "raw/bls_jolts": {
+      "name": "bls_jolts",
+      "source_id": "bls_jolts",
+      "location": "raw",
+      "file_path": "data/raw/bls_jolts.parquet",
+      "format": "parquet",
+      "record_count": 428,
+      "file_size_bytes": 12318,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency",
+        "period",
+        "year"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-23T15:55:17.876469",
+      "last_updated": "2026-01-23T15:55:17.876469",
+      "last_record_date": "2025-11-01T00:00:00",
+      "fetch_count": 1,
+      "description": "Job Openings and Labor Turnover Survey"
+    },
+    "raw/fed_stress_scenarios": {
+      "name": "fed_stress_scenarios",
+      "source_id": "fed_stress_scenarios",
+      "location": "raw",
+      "file_path": "data/raw/fed_stress_scenarios.parquet",
+      "format": "parquet",
+      "record_count": 880,
+      "file_size_bytes": 57689,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "year",
+        "table",
+        "region",
+        "scenario_name",
+        "date",
+        "real_gdp_growth",
+        "nominal_gdp_growth",
+        "real_disposable_income_growth",
+        "nominal_disposable_income_growth",
+        "unemployment_rate",
+        "cpi_inflation_rate",
+        "3_month_treasury_rate",
+        "5_year_treasury_yield",
+        "10_year_treasury_yield",
+        "bbb_corporate_yield",
+        "mortgage_rate",
+        "prime_rate",
+        "dow_jones_total_stock_market_index",
+        "house_price_index",
+        "commercial_real_estate_price_index",
+        "market_volatility_index",
+        "euro_area_real_gdp_growth",
+        "euro_area_inflation",
+        "euro_area_bilateral_dollar_exchange_rate",
+        "developing_asia_real_gdp_growth",
+        "developing_asia_inflation",
+        "developing_asia_bilateral_dollar_exchange_rate",
+        "japan_real_gdp_growth",
+        "japan_inflation",
+        "japan_bilateral_dollar_exchange_rate",
+        "uk_real_gdp_growth",
+        "uk_inflation",
+        "uk_bilateral_dollar_exchange_rate"
+      ],
+      "primary_keys": [
+        "year",
+        "table",
+        "date"
+      ],
+      "first_fetched": "2026-01-26T15:08:44.449293",
+      "last_updated": "2026-01-26T22:13:53.313249",
+      "last_record_date": "2026-01-26T22:13:52.973581",
+      "fetch_count": 4,
+      "description": "Federal Reserve DFAST supervisory stress test scenarios (baseline & severely adverse)"
+    },
+    "raw/fred_banking": {
+      "name": "fred_banking",
+      "source_id": "fred_banking",
+      "location": "raw",
+      "file_path": "data/raw/fred_banking.parquet",
+      "format": "parquet",
+      "record_count": 10200,
+      "file_size_bytes": 190065,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-26T22:13:18.631502",
+      "last_updated": "2026-01-26T22:13:18.631502",
+      "last_record_date": "2026-01-14T00:00:00",
+      "fetch_count": 1,
+      "description": "H.8 commercial banking data and credit conditions"
+    },
+    "raw/fred_stress_index": {
+      "name": "fred_stress_index",
+      "source_id": "fred_stress_index",
+      "location": "raw",
+      "file_path": "data/raw/fred_stress_index.parquet",
+      "format": "parquet",
+      "record_count": 13325,
+      "file_size_bytes": 218964,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-26T22:13:22.871612",
+      "last_updated": "2026-01-26T22:13:22.871612",
+      "last_record_date": "2026-01-16T00:00:00",
+      "fetch_count": 1,
+      "description": "Composite financial stress and conditions indicators"
+    },
+    "raw/fred_mev": {
+      "name": "fred_mev",
+      "source_id": "fred_mev",
+      "location": "raw",
+      "file_path": "data/raw/fred_mev.parquet",
+      "format": "parquet",
+      "record_count": 35659,
+      "file_size_bytes": 512859,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-26T22:13:35.201907",
+      "last_updated": "2026-01-26T22:13:35.201907",
+      "last_record_date": "2026-01-23T00:00:00",
+      "fetch_count": 1,
+      "description": "Key macroeconomic variables used in stress test scenario design"
+    },
+    "raw/fred_market": {
+      "name": "fred_market",
+      "source_id": "fred_market",
+      "location": "raw",
+      "file_path": "data/raw/fred_market.parquet",
+      "format": "parquet",
+      "record_count": 46448,
+      "file_size_bytes": 594571,
+      "columns": [
+        "_source_id",
+        "_fetched_at",
+        "series_id",
+        "date",
+        "value",
+        "title",
+        "units",
+        "frequency"
+      ],
+      "primary_keys": [
+        "series_id",
+        "date"
+      ],
+      "first_fetched": "2026-01-26T22:13:48.019200",
+      "last_updated": "2026-01-26T22:13:48.019200",
+      "last_record_date": "2026-01-26T00:00:00",
+      "fetch_count": 1,
+      "description": "Broad market indicators and risk measures"
+    }
+  }
+}
