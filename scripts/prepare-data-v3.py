@@ -46,6 +46,35 @@ def prepare_ohlcv_dataset(name: str, df: pd.DataFrame, config: dict) -> dict:
     # Remove cdata internal columns
     df = df[[c for c in df.columns if not c.startswith('_')]]
 
+    # Handle empty DataFrame
+    if len(df) == 0 or 'date' not in df.columns or 'symbol' not in df.columns:
+        return {
+            "name": name,
+            "type": "ohlcv",
+            "description": config.get("description", ""),
+            "meta": {
+                "name": name,
+                "source_id": name,
+                "location": "bridge",
+                "format": "dataframe",
+                "record_count": 0,
+                "columns": list(df.columns) if len(df.columns) > 0 else [],
+                "primary_keys": config.get("primary_keys", []),
+                "fetched_at": datetime.utcnow().isoformat(),
+                "description": config.get("description", ""),
+                "symbols": [],
+            },
+            "stats": {
+                "date_range": {
+                    "min": None,
+                    "max": None,
+                    "days": 0,
+                },
+                "by_symbol": {},
+            },
+            "data": [],
+        }
+
     df['date'] = pd.to_datetime(df['date'], utc=True)
 
     # Get unique symbols
@@ -111,6 +140,36 @@ def prepare_fred_dataset(name: str, df: pd.DataFrame, config: dict, data_type: s
 
     # Remove cdata internal columns
     df = df[[c for c in df.columns if not c.startswith('_')]]
+
+    # Handle empty DataFrame
+    if len(df) == 0 or 'date' not in df.columns or 'series_id' not in df.columns:
+        # Return minimal dataset for empty results
+        return {
+            "name": name,
+            "type": data_type,
+            "description": config.get("description", ""),
+            "meta": {
+                "name": name,
+                "source_id": name,
+                "location": "bridge",
+                "format": "dataframe",
+                "record_count": 0,
+                "columns": list(df.columns) if len(df.columns) > 0 else [],
+                "primary_keys": config.get("primary_keys", []),
+                "fetched_at": datetime.utcnow().isoformat(),
+                "description": config.get("description", ""),
+                "series": [],
+            },
+            "stats": {
+                "date_range": {
+                    "min": None,
+                    "max": None,
+                    "days": 0,
+                },
+                "by_series": {},
+            },
+            "data": [],
+        }
 
     df['date'] = pd.to_datetime(df['date'], utc=True)
 
@@ -182,6 +241,36 @@ def prepare_rss_dataset(name: str, df: pd.DataFrame, config: dict) -> dict:
 
     # Remove cdata internal columns
     df = df[[c for c in df.columns if not c.startswith('_')]]
+
+    # Handle empty DataFrame
+    if len(df) == 0:
+        return {
+            "name": name,
+            "type": "rss",
+            "description": config.get("description", ""),
+            "meta": {
+                "name": name,
+                "source_id": name,
+                "location": "bridge",
+                "format": "dataframe",
+                "record_count": 0,
+                "columns": list(df.columns) if len(df.columns) > 0 else [],
+                "primary_keys": config.get("primary_keys", []),
+                "fetched_at": datetime.utcnow().isoformat(),
+                "description": config.get("description", ""),
+                "feeds": [],
+            },
+            "stats": {
+                "date_range": {
+                    "min": None,
+                    "max": None,
+                    "days": 0,
+                },
+                "articles_by_feed": {},
+                "articles_by_day": {},
+            },
+            "data": [],
+        }
 
     # Handle published date
     if 'published' in df.columns:
