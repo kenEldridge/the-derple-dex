@@ -1,0 +1,376 @@
+=== FILE: cloud/azure-ollama-gpu/terraform/providers.tf ===
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+
+=== FILE: cloud/azure-ollama-gpu/terraform/variables.tf ===
+variable "location" {
+  type        = string
+  default     = "eastus"
+  description = "Azure region"
+}
+
+variable "resource_group_name" {
+  type        = string
+  default     = "rg-ollama-dev-eastus"
+}
+
+variable "admin_username" {
+  type        = string
+  default     = "ollamaadmin"
+}
+
+variable "ssh_public_key" {
+  type        = string
+  description = "Your SSH public key"
+}
+
+variable "vm_size" {
+  type        = string
+  default     = "Standard_NC4as_T4_v3"
+  description = "GPU VM size"
+}
+
+variable "vnet_address_space" {
+  type        = string
+  default     = "10.10.0.0/16"
+}
+
+variable "subnet_address_prefix" {
+  type        = string
+  default     = "10.10.1.0/24"
+}
+
+variable "enable_public_ip" {
+  type        = bool
+  default     = true
+  description = "Whether to create a public IP for SSH"
+}
+
+=== FILE: cloud/azure-ollama-gpu/terraform/main.tf ===
+resource "azurerm_resource_group" "rg" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
+resource "azurerm_virtual_network" "vnet" {
+  name                = "vnet-ollama"
+  address_space       = [var.vnet_address_space]
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_subnet" "subnet" {
+  name                 = "snet-ollama"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = [var.subnet_address_prefix]
+}
+
+resource "azurerm_network_security_group" "nsg" {
+  name                = "nsg-ollama"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "SSH"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "Internet" # tighten to your IP later
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_public_ip" "pip" {
+  count               = var.enable_public_ip ? 1 : 0
+  name                = "pip-ollama"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Dynamic"
+  sku                 = "Basic"
+}
+
+resource "azurerm_network_interface" "nic" {
+  name                = "nic-ollama"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = var.enable_public_ip ? azurerm_public_ip.pip[0].id : null
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nic_nsg" {
+  network_interface_id      = azurerm_network_interface.nic.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+resource "azurerm_linux_virtual_machine" "vm" {
+  name                = "vm-ollama-gpu"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  size                = var.vm_size
+  admin_username      = var.admin_username
+
+  network_interface_ids = [
+    azurerm_network_interface.nic.id
+  ]
+
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = var.ssh_public_key
+  }
+
+  os_disk {
+    name                 = "disk-ollama-os"
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+    disk_size_gb         = 128
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+
+  priority        = "Regular"
+  eviction_policy = "Deallocate"
+
+  custom_data = filebase64("${path.module}/../cloud-init/cloud-init-ollama.yaml")
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+output "vm_public_ip" {
+  value       = var.enable_public_ip ? azurerm_public_ip.pip[0].ip_address : null
+  description = "Public IP of the Ollama VM (if enabled)"
+}
+
+output "vm_private_ip" {
+  value       = azurerm_network_interface.nic.private_ip_address
+  description = "Private IP of the Ollama VM"
+}
+
+=== FILE: cloud/azure-ollama-gpu/cloud-init/cloud-init-ollama.yaml ===
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - curl
+  - wget
+  - git
+  - build-essential
+  - ca-certificates
+  - gnupg
+  - lsb-release
+
+runcmd:
+  # Install NVIDIA drivers (for NCas_T4_v3, Ubuntu 22.04)
+  - |
+    ubuntu-drivers autoinstall || true
+
+  # Reboot after driver install (cloud-init will continue)
+  - |
+    (sleep 30 && reboot) &
+
+  # Install Docker
+  - |
+    apt-get update
+    apt-get install -y \
+      ca-certificates \
+      curl \
+      gnupg
+
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    apt-get update
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    usermod -aG docker ${USER} || true
+
+  # Install Ollama (native)
+  - |
+    curl -fsSL https://ollama.com/install.sh | sh
+
+  # Create systemd service for Ollama
+  - |
+    cat >/etc/systemd/system/ollama.service << 'EOF'
+    [Unit]
+    Description=Ollama LLM service
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=root
+    Environment=OLLAMA_HOST=127.0.0.1:11434
+    ExecStart=/usr/local/bin/ollama serve
+    Restart=always
+    RestartSec=5
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    systemctl daemon-reload
+    systemctl enable ollama.service
+    systemctl start ollama.service
+
+=== FILE: cloud/azure-ollama-gpu/scripts/start-vm.sh ===
+#!/usr/bin/env bash
+set -euo pipefail
+
+RG="rg-ollama-dev-eastus"
+VM="vm-ollama-gpu"
+
+az vm start \
+  --resource-group "$RG" \
+  --name "$VM"
+
+=== FILE: cloud/azure-ollama-gpu/scripts/stop-vm.sh ===
+#!/usr/bin/env bash
+set -euo pipefail
+
+RG="rg-ollama-dev-eastus"
+VM="vm-ollama-gpu"
+
+az vm deallocate \
+  --resource-group "$RG" \
+  --name "$VM"
+
+=== FILE: cloud/azure-ollama-gpu/scripts/configure-auto-shutdown.sh ===
+#!/usr/bin/env bash
+set -euo pipefail
+
+RG="rg-ollama-dev-eastus"
+VM="vm-ollama-gpu"
+TIME="23:00"
+TZ="Eastern Standard Time"
+EMAIL="you@example.com" # change this
+
+az vm auto-shutdown \
+  --resource-group "$RG" \
+  --name "$VM" \
+  --time "$TIME" \
+  --timezone "$TZ" \
+  --email "$EMAIL"
+
+=== FILE: cloud/azure-ollama-gpu/scripts/ssh-tunnel.sh ===
+#!/usr/bin/env bash
+set -euo pipefail
+
+USER="ollamaadmin"
+HOST="$1" # vm public ip or dns
+PORT="${2:-22}"
+
+ssh -L 11434:localhost:11434 -p "$PORT" "${USER}@${HOST}"
+
+=== FILE: cloud/azure-ollama-gpu/docs/architecture.md ===
+# Azure Ollama GPU Devbox – Architecture
+
+## Resources
+
+- Resource group: `rg-ollama-dev-eastus`
+- VNet: `vnet-ollama` (`10.10.0.0/16`)
+- Subnet: `snet-ollama` (`10.10.1.0/24`)
+- NSG: `nsg-ollama` (SSH only, tighten later)
+- VM: `vm-ollama-gpu` (`Standard_NC4as_T4_v3`, Ubuntu 22.04)
+- OS disk: 128 GB Premium SSD
+- Public IP: optional, for SSH only
+
+## Network & Security
+
+- NSG allows inbound SSH (22) from Internet by default (should be restricted to your IP).
+- No HTTP/HTTPS ports exposed publicly.
+- Ollama binds to `127.0.0.1:11434` on the VM.
+- Access via:
+  - SSH tunnel from laptop, or
+  - Tailscale (optional, not yet codified here).
+
+## Cost Controls
+
+- GPU VM billed while running.
+- Scripts:
+  - `start-vm.sh` / `stop-vm.sh` use `az vm start/deallocate`.
+- Auto-shutdown script configures nightly shutdown.
+- Residual costs when stopped:
+  - OS disk
+  - Public IP (if present)
+  - VNet/NSG (small)
+
+## Developer Workflow
+
+- Use SSH tunnel to expose `localhost:11434` on your laptop.
+- Point OpenAI-compatible tools (e.g., Continue) at `http://localhost:11434/v1`.
+- Default to local model; switch to cloud model when needed.
+
+=== FILE: cloud/azure-ollama-gpu/.gitignore ===
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Python helper
+__pycache__/
+*.pyc
+
+# Misc
+*.log
+
+=== FILE: cloud/azure-ollama-gpu/README.md ===
+# Azure Ollama GPU Devbox
+
+A small, cost-controlled Azure GPU VM setup for running Ollama as a private, OpenAI-compatible endpoint for “easy” dev tasks.
+
+## Features
+
+- GPU VM (`Standard_NC4as_T4_v3` by default) in `eastus`
+- Ubuntu 22.04 with NVIDIA drivers
+- Ollama running as a systemd service, bound to `127.0.0.1:11434`
+- SSH tunnel-based access from your laptop
+- Azure CLI scripts for start/stop and auto-shutdown
+
+## Quick Start
+
+1. **Set up Terraform variables**
+
+Create `terraform.tfvars`:
+
+```hcl
+ssh_public_key = "ssh-ed25519 AAAA... your key ..."
+admin_username = "ollamaadmin"
+location       = "eastus"
