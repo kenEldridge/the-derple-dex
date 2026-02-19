@@ -1,0 +1,160 @@
+---
+// Cochlea frequency map (Plotly version)
+// Top: exponential frequency curve on linear Hz axis
+// Bottom: equal-width octave bands along membrane position
+---
+
+<div class="cochlea-wrap">
+	<div id="cochlea-plot"></div>
+</div>
+
+<script>
+	import Plotly from 'plotly.js-dist-min';
+
+	const octaves = [
+		{ lo: 125, hi: 250, label: '125-250 Hz', color: '#f48fb1' },
+		{ lo: 250, hi: 500, label: '250-500', color: '#9575cd' },
+		{ lo: 500, hi: 1000, label: '500-1k', color: '#64b5f6' },
+		{ lo: 1000, hi: 2000, label: '1k-2k', color: '#81c784' },
+		{ lo: 2000, hi: 4000, label: '2k-4k', color: '#fff176' },
+		{ lo: 4000, hi: 8000, label: '4k-8k', color: '#ffb74d' },
+		{ lo: 8000, hi: 16000, label: '8k-16k', color: '#e57373' }
+	];
+
+	const minF = 125;
+	const maxF = 16000;
+	const octaveCount = 7;
+	const x = Array.from({ length: 500 }, (_, i) => (i / 499) * octaveCount);
+	const y = x.map(v => minF * Math.pow(2, v));
+
+	const curveTrace = {
+		x,
+		y,
+		type: 'scatter',
+		mode: 'lines',
+		line: { color: '#ffab40', width: 3 },
+		fill: 'tozeroy',
+		fillcolor: 'rgba(255,171,64,0.12)',
+		hovertemplate: 'Position: %{x:.2f}<br>Frequency: %{y:.0f} Hz<extra></extra>',
+		name: 'Frequency map',
+		xaxis: 'x',
+		yaxis: 'y'
+	};
+
+	const bandTrace = {
+		x: octaves.map((_, i) => i + 0.5),
+		y: Array(octaves.length).fill(1),
+		type: 'bar',
+		width: 0.98,
+		marker: {
+			color: octaves.map(o => o.color),
+			line: { color: '#1a1a1a', width: 1 }
+		},
+		text: octaves.map(o => o.label),
+		textposition: 'outside',
+		textfont: { color: '#d8d8d8', size: 10 },
+		hovertemplate: 'Band: %{text}<extra></extra>',
+		showlegend: false,
+		xaxis: 'x2',
+		yaxis: 'y2'
+	};
+
+	const shapes = [];
+	for (let i = 0; i <= octaveCount; i += 1) {
+		shapes.push({
+			type: 'line',
+			x0: i,
+			x1: i,
+			y0: 0,
+			y1: 1,
+			xref: 'x',
+			yref: 'paper',
+			line: { color: 'rgba(255,255,255,0.12)', width: 1, dash: 'dot' }
+		});
+	}
+
+	const layout = {
+		paper_bgcolor: '#0a0a0a',
+		plot_bgcolor: '#0a0a0a',
+		font: { color: '#f5f5f5', size: 12 },
+		height: 332,
+		margin: { l: 62, r: 34, t: 20, b: 48 },
+		showlegend: false,
+		bargap: 0.02,
+		xaxis: {
+			domain: [0, 1],
+			anchor: 'y',
+			range: [0, octaveCount],
+			showticklabels: false,
+			gridcolor: 'rgba(255,255,255,0.08)',
+			fixedrange: true
+		},
+		yaxis: {
+			domain: [0.32, 1],
+			range: [0, 16000],
+			title: 'Frequency (Hz)',
+			tickvals: [0, 4000, 8000, 12000, 16000],
+			gridcolor: 'rgba(255,255,255,0.10)',
+			zeroline: false,
+			automargin: true,
+			fixedrange: true
+		},
+		xaxis2: {
+			domain: [0, 1],
+			anchor: 'y2',
+			range: [0, octaveCount],
+			tickvals: [0, octaveCount],
+			ticktext: ['Apex', 'Base'],
+			title: 'Position along basilar membrane (equal-width octave steps)',
+			gridcolor: 'rgba(255,255,255,0.08)',
+			automargin: true,
+			fixedrange: true
+		},
+		yaxis2: {
+			domain: [0, 0.28],
+			range: [0, 1.34],
+			showticklabels: false,
+			showgrid: false,
+			zeroline: false,
+			fixedrange: true
+		},
+		shapes,
+		annotations: [
+			{
+				x: 0.99,
+				y: 0.96,
+				xref: 'paper',
+				yref: 'paper',
+				text: 'orange curve: frequency rises exponentially',
+				showarrow: false,
+				xanchor: 'right',
+				font: { color: '#ffcc80', size: 11 }
+			}
+		]
+	};
+
+	Plotly.newPlot('cochlea-plot', [curveTrace, bandTrace], layout, {
+		responsive: true,
+		displayModeBar: false
+	});
+</script>
+
+<style>
+	.cochlea-wrap {
+		width: 100%;
+		margin: 1rem 0;
+	}
+
+	#cochlea-plot {
+		width: 100%;
+		height: 332px;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	@media (max-width: 820px) {
+		#cochlea-plot {
+			height: 360px;
+		}
+	}
+</style>

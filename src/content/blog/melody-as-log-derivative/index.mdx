@@ -1,0 +1,147 @@
+---
+title: 'Melody as a Log-Derivative: Why Songs Survive Key Changes'
+description: 'Why the logarithm is not just a mathematical convenience, but the ear''s native pitch coordinate system -- and why that makes melody survive key changes'
+pubDate: 2026-02-19
+---
+
+import MelodyTranspositionPlot from '../../../components/MelodyTranspositionPlot.astro';
+import PianoLogScale from '../../../components/PianoLogScale.astro';
+import CochleaDiagram from '../../../components/CochleaDiagram.astro';
+
+---
+
+*This is a compact intuition-first post. For deeper treatment, see [references](#references). Content generated via LLM collaboration -- see [authorship note](#authorship).*
+
+---
+
+# Why Songs Survive Key Changes
+
+You recognize "Twinkle Twinkle Little Star" whether it starts on C or F&#9839;.
+
+Not because the absolute notes stay the same. They do not. Move from C major to D major and every note shifts: C&#8594;D, G&#8594;A, A&#8594;B. Different note names, different frequencies, different piano keys.
+
+What stays the same is the *pattern of intervals*. And those intervals are fundamentally frequency **ratios**, not raw Hz differences.
+
+---
+
+## Intervals Are Ratios, Not Differences
+
+Consider two jumps that are both "100 Hz apart":
+
+- 200 Hz &#8594; 300 Hz: ratio of 1.5. That is a **perfect fifth** -- one of the most recognizable intervals in music.
+- 2000 Hz &#8594; 2100 Hz: ratio of 1.05 (~84.5 cents). That is smaller than a semitone, still clearly audible, and much narrower than a fifth.
+
+Same Hz gap, very different musical meaning. Musical pitch intervals track **frequency ratio** (equivalently, differences in log-frequency), not raw Hz spacing.
+
+You can verify this quickly. Play C3 with G3, then C5 with G5. In equal temperament both are the same interval class (7 semitones; ratio 2^&#123;7/12&#125; &#8776; 1.498, close to 3:2). The Hz gap changes a lot, but the interval category does not.
+
+---
+
+## Quick Check (Optional)
+
+If this feels obvious, that is fine. This is just a visual sanity check of the transposition math.
+
+- **Panel A**: absolute frequencies move when you change key.
+- **Panel B**: interval ratios between consecutive notes do not.
+
+That invariance is the point.
+
+<MelodyTranspositionPlot />
+
+---
+
+## Why Ratios? Enter the Logarithm
+
+If pitch structure is ratio-based, we want coordinates where ratios are easy to compare. That is exactly what logarithms do:
+
+> log(a / b) = log(a) - log(b)
+
+Log turns ratios into differences. On a log-frequency axis, equal ratios become equal distances. A perfect fifth keeps the same spacing no matter where it appears in register.
+
+This is not just abstract math. In equal temperament, each piano key multiplies frequency by the same factor (2^&#123;1/12&#125; &#8776; 1.059). Equal key spacing corresponds to equal log-frequency steps.
+
+<PianoLogScale />
+<CochleaDiagram />
+
+*Top: piano keys space octaves evenly, while a linear Hz axis does not. Bottom: the cochlea behaves similarly at first approximation: equal octave steps map to roughly equal membrane distances, while the Hz range doubles each octave (orange curve).*
+
+---
+
+## The Ear Works in Log-Space
+
+The cochlea -- the spiral structure of the inner ear -- is tonotopic: different positions respond best to different frequencies. High frequencies peak near the base; low frequencies peak near the apex. To first order, this place-to-frequency map is approximately logarithmic.
+
+![Uncoiled cochlea with basilar membrane, showing frequency regions from 1600 Hz at the base to 25 Hz at the apex](./uncoiled_cochlea.png)
+
+*The cochlea, uncoiled. The basilar membrane widens from base (narrow, stiff, high-frequency) to apex (wide, more compliant, low-frequency). The labels suggest an approximately log-like map. Diagram by Kern et al., [CC BY 2.5](https://creativecommons.org/licenses/by/2.5/).*
+
+Why this shape? The basilar membrane is narrow and stiff at the base, wide and compliant at the apex. A stiff region resonates at high frequencies (like a short, tight guitar string); a compliant region resonates at low frequencies (like a long, loose one). The stiffness drops roughly exponentially along the membrane's length, which is the main driver of the logarithmic frequency map. Other factors -- effective mass, damping, cochlear fluid coupling, active amplification by outer hair cells -- refine the picture, but the stiffness gradient is the core of it.
+
+![Georg von Bekesy](./bekesy_nobel.jpg)
+
+[Georg von Bekesy](https://en.wikipedia.org/wiki/Georg_von_B%C3%A9k%C3%A9sy) worked this out in the 1940s--50s, earning the 1961 Nobel Prize in Physiology or Medicine. He dissected human cochleae, dusted the basilar membrane with silver flakes, and used strobe photography to watch it vibrate. What he saw was a **traveling wave**: sound entering the ear sends a ripple down the membrane, and the ripple peaks at a position determined by frequency. High-pitched sounds peak near the stiff base; low-pitched sounds travel further and peak near the compliant apex. Each point on the membrane is essentially tuned to a specific frequency -- a physical frequency analyzer, with the frequency axis laid out approximately logarithmically.
+
+The logarithm here is not just a convenient transform. The cochlea's tonotopic map is a major reason interval perception aligns with ratios. Ratio detection is built into the hardware.
+
+---
+
+## Melody as a Derivative
+
+Now we can state the key idea precisely.
+
+In log-frequency space, a melody is a sequence of positions:
+
+> x&#8321;, x&#8322;, x&#8323;, x&#8324;, ...
+
+The heard intervals are the differences between consecutive positions:
+
+> x&#8322; - x&#8321;, &ensp; x&#8323; - x&#8322;, &ensp; x&#8324; - x&#8323;, &ensp; ...
+
+That is a **discrete derivative** of pitch in log-frequency coordinates.
+
+Under key change (transposition), every frequency is multiplied by a constant k, so each log-position gets +log(k):
+
+> x&#8321; + log(k), &ensp; x&#8322; + log(k), &ensp; x&#8323; + log(k), &ensp; ...
+
+Take differences again:
+
+> [x&#8322; + log(k)] - [x&#8321; + log(k)] = x&#8322; - x&#8321;
+
+The constant cancels. The interval sequence is unchanged. So melody, represented this way, is transposition-invariant.
+
+Scope note: this post explains what transposition preserves (interval structure in log-frequency), not how tonal center is established. Tonic perception depends strongly on musical context.
+
+---
+
+## Where It Breaks Down
+
+This invariance is strong, but not absolute.
+
+- **Timbre shifts with register.** A melody in sub-bass and the same melody in mid-range can feel different because harmonic balance and auditory sensitivity change.
+- **Extreme key changes.** Push far enough and notes leave the range where pitch cues support melody robustly (roughly tens of Hz up to a few kHz).
+
+These are limits on perception, not a contradiction of the core log-interval model.
+
+---
+
+## Scope Boundary
+
+The claim here is narrow: melody survives key changes because interval structure is preserved in log-frequency space.
+
+Questions about tonic, tonal gravity, and why one pitch feels like "home" are real and important, but they are a separate layer of perception.
+
+---
+
+## References
+
+- **[Musical Consonance from Frequency Interactions](../musical-consonance-from-frequency-interactions/)** -- Companion post on psychoacoustic layers and why simple ratios tend to sound consonant.
+- **[The Physics Of Dissonance](https://www.youtube.com/watch?v=tCsl6ZcY9ag)** by Henry Reich (minutephysics) -- Why simple frequency ratios sound consonant.
+- **[Dissonance: A Journey Through Musical Possibility Space](https://aatishb.com/dissonance/)** by Aatish Bhatia -- Interactive exploration of consonance through frequency ratios.
+- **[Georg von Bekesy](https://en.wikipedia.org/wiki/Georg_von_B%C3%A9k%C3%A9sy)** -- Wikipedia article on the physicist who discovered the traveling wave and mapped cochlear frequency response. Nobel Prize 1961.
+- **[Nobel Prize ceremony speech, 1961](https://www.nobelprize.org/prizes/medicine/1961/ceremony-speech/)** -- Presentation speech describing Bekesy's discoveries.
+
+---
+
+## Authorship
+
+I didn't write any of this content. The text, visualizations, and interactive plots are the result of iterative collaboration and "LLM dueling" between Claude (Anthropic) and ChatGPT (OpenAI). The interactive component was implemented by Claude Code.

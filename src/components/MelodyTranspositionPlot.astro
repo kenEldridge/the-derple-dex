@@ -1,0 +1,285 @@
+---
+// Melody Transposition Invariance Visualization
+// Shows that melody identity is preserved in interval ratios under transposition
+---
+
+<div id="melody-container">
+	<div id="controls">
+		<label>Key:</label>
+		<div id="key-buttons">
+			<button class="key-btn" data-key="0">C</button>
+			<button class="key-btn" data-key="2">D</button>
+			<button class="key-btn" data-key="4">E</button>
+			<button class="key-btn" data-key="5">F</button>
+			<button class="key-btn" data-key="7">G</button>
+			<button class="key-btn" data-key="9">A</button>
+			<button class="key-btn" data-key="11">B</button>
+		</div>
+		<button id="play-btn">Play</button>
+	</div>
+	<div id="plot-grid">
+		<div id="panel-a"></div>
+		<div id="panel-b"></div>
+	</div>
+</div>
+
+<script>
+	import Plotly from 'plotly.js-dist-min';
+
+	// ============================================================
+	// Constants
+	// ============================================================
+	const C4 = 261.63; // Hz
+	const ALL_NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+	// Melody: "Twinkle Twinkle" first 7 notes: C C G G A A G
+	const melodyNotes = [0, 0, 7, 7, 9, 9, 7]; // semitones above C4
+
+	// Interval names between consecutive notes (music-theoretic)
+	const intervalLabels = ['unison', 'P5 up', 'unison', 'M2 up', 'unison', 'M2 down'];
+
+	// ============================================================
+	// Helper functions
+	// ============================================================
+	function noteFreq(semitone) {
+		return C4 * Math.pow(2, semitone / 12);
+	}
+
+	function getFrequencies(keyOffset) {
+		return melodyNotes.map(n => noteFreq(n + keyOffset));
+	}
+
+	function getRatios(freqs) {
+		return freqs.slice(1).map((f, i) => f / freqs[i]);
+	}
+
+	function getNoteLabels(keyOffset) {
+		return melodyNotes.map(n => ALL_NOTES[(n + keyOffset) % 12]);
+	}
+
+	// ============================================================
+	// Plotly layouts (compact dark theme)
+	// ============================================================
+	const layoutA = {
+		title: 'A: Frequencies shift',
+		xaxis: {title: '', gridcolor: 'rgba(255,255,255,0.2)'},
+		yaxis: {title: 'Hz', gridcolor: 'rgba(255,255,255,0.2)'},
+		paper_bgcolor: '#000000',
+		plot_bgcolor: '#000000',
+		font: {color: 'white', size: 11},
+		showlegend: false,
+		margin: {l: 44, r: 10, t: 34, b: 30}
+	};
+
+	const layoutB = {
+		title: 'B: Ratios stay fixed',
+		xaxis: {title: '', gridcolor: 'rgba(255,255,255,0.2)'},
+		yaxis: {title: 'ratio', gridcolor: 'rgba(255,255,255,0.2)', range: [0.8, 1.6]},
+		paper_bgcolor: '#000000',
+		plot_bgcolor: '#000000',
+		font: {color: 'white', size: 11},
+		showlegend: false,
+		margin: {l: 44, r: 10, t: 34, b: 30}
+	};
+
+	// ============================================================
+	// Update plots
+	// ============================================================
+	function updatePlots(keyOffset) {
+		const freqs = getFrequencies(keyOffset);
+		const ratios = getRatios(freqs);
+		const labels = getNoteLabels(keyOffset);
+
+		const traceA = {
+			x: labels,
+			y: freqs,
+			type: 'bar',
+			marker: {color: '#64b5f6'}
+		};
+
+		const traceB = {
+			x: intervalLabels,
+			y: ratios,
+			type: 'bar',
+			marker: {color: '#81c784'}
+		};
+
+		Plotly.react('panel-a', [traceA], layoutA, {
+			responsive: true,
+			displayModeBar: false
+		});
+		Plotly.react('panel-b', [traceB], layoutB, {
+			responsive: true,
+			displayModeBar: false
+		});
+	}
+
+	// ============================================================
+	// Web Audio playback
+	// ============================================================
+	let audioContext = null;
+	let isPlaying = false;
+
+	function playMelody(keyOffset) {
+		if (isPlaying) return;
+		isPlaying = true;
+
+		if (!audioContext) {
+			audioContext = new (window.AudioContext || window.webkitAudioContext)();
+		}
+
+		const freqs = getFrequencies(keyOffset);
+		const noteLength = 0.4; // seconds
+		const noteDuration = 0.5; // seconds (with gap)
+
+		freqs.forEach((freq, i) => {
+			const startTime = audioContext.currentTime + i * noteDuration;
+			const osc = audioContext.createOscillator();
+			const gain = audioContext.createGain();
+
+			osc.connect(gain);
+			gain.connect(audioContext.destination);
+
+			osc.frequency.value = freq;
+			osc.type = 'sine';
+
+			// Fade in/out
+			gain.gain.setValueAtTime(0.2, startTime);
+			gain.gain.exponentialRampToValueAtTime(0.01, startTime + noteLength);
+
+			osc.start(startTime);
+			osc.stop(startTime + noteLength);
+		});
+
+		// Re-enable button after playback
+		const totalTime = freqs.length * noteDuration;
+		setTimeout(() => {
+			isPlaying = false;
+		}, totalTime * 1000);
+	}
+
+	// ============================================================
+	// Event listeners
+	// ============================================================
+	let currentKey = 0;
+
+	document.querySelectorAll('.key-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			currentKey = parseInt(e.target.dataset.key);
+			document.querySelectorAll('.key-btn').forEach(b => b.classList.remove('active'));
+			e.target.classList.add('active');
+			updatePlots(currentKey);
+		});
+	});
+
+	document.getElementById('play-btn').addEventListener('click', () => {
+		playMelody(currentKey);
+	});
+
+	// ============================================================
+	// Initial render
+	// ============================================================
+	document.querySelector('[data-key="0"]').classList.add('active');
+	updatePlots(0);
+</script>
+
+<style>
+	#melody-container {
+		width: 100%;
+		margin: 1rem 0 1.25rem;
+		padding: 0.75rem;
+		border: 1px solid #2e2e2e;
+		border-radius: 8px;
+		background: #101010;
+	}
+
+	#controls {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	#controls label {
+		font-weight: bold;
+		color: white;
+		margin-right: 0.1rem;
+		font-size: 0.9rem;
+	}
+
+	#key-buttons {
+		display: flex;
+		gap: 0.35rem;
+		flex-wrap: wrap;
+	}
+
+	.key-btn {
+		padding: 0.28rem 0.55rem;
+		background-color: #333;
+		color: white;
+		border: 1px solid #666;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: bold;
+		transition: all 0.2s;
+		font-size: 0.82rem;
+		line-height: 1.15;
+	}
+
+	.key-btn:hover {
+		background-color: #444;
+		border-color: #888;
+	}
+
+	.key-btn.active {
+		background-color: #64b5f6;
+		border-color: #64b5f6;
+		color: black;
+	}
+
+	#play-btn {
+		padding: 0.3rem 0.7rem;
+		background-color: #81c784;
+		color: black;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: bold;
+		transition: all 0.2s;
+		font-size: 0.84rem;
+		line-height: 1.15;
+	}
+
+	#play-btn:hover {
+		background-color: #a5d6a7;
+	}
+
+	#play-btn:active {
+		transform: scale(0.95);
+	}
+
+	#plot-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.65rem;
+	}
+
+	#panel-a, #panel-b {
+		width: 100%;
+		height: 220px;
+		margin: 0;
+		min-height: 0;
+	}
+
+	@media (max-width: 820px) {
+		#plot-grid {
+			grid-template-columns: 1fr;
+			gap: 0.55rem;
+		}
+
+		#panel-a, #panel-b {
+			height: 200px;
+		}
+	}
+</style>

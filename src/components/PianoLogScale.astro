@@ -1,0 +1,158 @@
+---
+// Piano keyboard vs linear frequency scale (Plotly version)
+---
+
+<div class="pls-container">
+	<div id="pls-plot"></div>
+</div>
+
+<script>
+	import Plotly from 'plotly.js-dist-min';
+
+	const notes = [
+		{ name: 'A1', freq: 55.0 },
+		{ name: 'A2', freq: 110.0 },
+		{ name: 'A3', freq: 220.0 },
+		{ name: 'A4', freq: 440.0 },
+		{ name: 'A5', freq: 880.0 },
+		{ name: 'A6', freq: 1760.0 },
+		{ name: 'A7', freq: 3520.0 }
+	];
+
+	const minF = notes[0].freq;
+	const maxF = notes[notes.length - 1].freq;
+	const logMin = Math.log2(minF);
+	const logMax = Math.log2(maxF);
+
+	const xLog = notes.map(n => (Math.log2(n.freq) - logMin) / (logMax - logMin));
+	const xLin = notes.map(n => (n.freq - minF) / (maxF - minF));
+	const noteNames = notes.map(n => n.name);
+	const freqLabels = notes.map(n => `${Math.round(n.freq)} Hz`);
+
+	const connectorX = [];
+	const connectorY = [];
+	for (let i = 0; i < notes.length; i += 1) {
+		connectorX.push(xLog[i], xLin[i], null);
+		connectorY.push(1, 0, null);
+	}
+
+	const connectors = {
+		x: connectorX,
+		y: connectorY,
+		type: 'scatter',
+		mode: 'lines',
+		line: { color: 'rgba(255,255,255,0.24)', width: 1.5, dash: 'dot' },
+		hoverinfo: 'skip',
+		showlegend: false
+	};
+
+	const topTrace = {
+		x: xLog,
+		y: Array(notes.length).fill(1),
+		type: 'scatter',
+		mode: 'markers+text',
+		text: noteNames,
+		textposition: 'top center',
+		marker: {
+			size: 13,
+			color: '#64b5f6',
+			symbol: 'diamond',
+			line: { color: '#c9e7ff', width: 1 }
+		},
+		customdata: freqLabels,
+		hovertemplate: 'Piano (log): %{text}<br>%{customdata}<extra></extra>',
+		showlegend: false
+	};
+
+	const bottomTrace = {
+		x: xLin,
+		y: Array(notes.length).fill(0),
+		type: 'scatter',
+		mode: 'markers',
+		text: noteNames,
+		marker: {
+			size: 11,
+			color: '#ffb74d',
+			symbol: 'circle',
+			line: { color: '#ffe0b2', width: 1 }
+		},
+		customdata: freqLabels,
+		hovertemplate: 'Linear Hz: %{text}<br>%{customdata}<extra></extra>',
+		showlegend: false
+	};
+
+	const rowLines = [
+		{
+			type: 'line',
+			x0: 0,
+			x1: 1,
+			y0: 1,
+			y1: 1,
+			line: { color: 'rgba(100,181,246,0.45)', width: 2 }
+		},
+		{
+			type: 'line',
+			x0: 0,
+			x1: 1,
+			y0: 0,
+			y1: 0,
+			line: { color: 'rgba(255,183,77,0.45)', width: 2 }
+		}
+	];
+
+	const layout = {
+		paper_bgcolor: '#0a0a0a',
+		plot_bgcolor: '#0a0a0a',
+		font: { color: '#f5f5f5', size: 12 },
+		margin: { l: 146, r: 18, t: 18, b: 24 },
+		height: 260,
+		showlegend: false,
+		xaxis: {
+			range: [-0.03, 1.03],
+			showgrid: false,
+			zeroline: false,
+			showticklabels: false,
+			fixedrange: true
+		},
+		yaxis: {
+			range: [-0.45, 1.35],
+			tickvals: [1, 0],
+			ticktext: ['Piano (log)', 'Linear Hz'],
+			gridcolor: 'rgba(255,255,255,0.06)',
+			zeroline: false,
+			automargin: true,
+			fixedrange: true
+		},
+		shapes: rowLines,
+		annotations: [
+			{
+				x: 0.5,
+				y: 0.5,
+				xref: 'x',
+				yref: 'y',
+				text: 'Same notes. Different horizontal spacing.',
+				showarrow: false,
+				font: { color: '#a7a7a7', size: 11 }
+			}
+		]
+	};
+
+	Plotly.newPlot('pls-plot', [connectors, topTrace, bottomTrace], layout, {
+		responsive: true,
+		displayModeBar: false
+	});
+</script>
+
+<style>
+	.pls-container {
+		width: 100%;
+		margin: 1rem 0;
+	}
+
+	#pls-plot {
+		width: 100%;
+		height: 260px;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+</style>
