@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Convert cdata fetched data to JSON for Astro static site (Bridge Pattern).
 
@@ -17,6 +18,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
+from time import perf_counter
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -37,6 +39,19 @@ load_dotenv(PROJECT_DIR / ".env")
 # Check if restricted data should be included (Yahoo Finance - Personal/Research Use)
 # Default to True for local development, set to False for public deployments
 INCLUDE_RESTRICTED_DATA = os.getenv("INCLUDE_RESTRICTED_DATA", "true").lower() in ("true", "1", "yes")
+FAIL_ON_DATA_ERRORS = os.getenv("FAIL_ON_DATA_ERRORS", "true").lower() in ("true", "1", "yes")
+
+
+def _parse_csv_env(var_name: str) -> set[str]:
+    """Parse a comma-separated env var into a normalized set."""
+    raw = os.getenv(var_name, "")
+    if not raw:
+        return set()
+    return {item.strip() for item in raw.split(",") if item.strip()}
+
+
+SKIP_DATASETS = _parse_csv_env("SKIP_DATASETS")
+ONLY_DATASETS = _parse_csv_env("ONLY_DATASETS")
 
 
 def prepare_ohlcv_dataset(name: str, df: pd.DataFrame, config: dict) -> dict:
@@ -485,6 +500,15 @@ def main():
     print("Preparing data for the-derple-dex using cdata bridge pattern...")
     print()
 
+    if ONLY_DATASETS:
+        print(f"  ONLY_DATASETS enabled: {', '.join(sorted(ONLY_DATASETS))}")
+    if SKIP_DATASETS:
+        print(f"  SKIP_DATASETS enabled: {', '.join(sorted(SKIP_DATASETS))}")
+    if not FAIL_ON_DATA_ERRORS:
+        print("  FAIL_ON_DATA_ERRORS=false - continuing on external data source errors")
+    if ONLY_DATASETS or SKIP_DATASETS or not FAIL_ON_DATA_ERRORS:
+        print()
+
     # Clean output directories to remove old data files
     import shutil
     if OUTPUT_PUBLIC.exists():
@@ -510,12 +534,21 @@ def main():
         primary_keys = dataset_config.get("primary_keys", [])
         incremental = dataset_config.get("incremental", False)
 
+        if ONLY_DATASETS and name not in ONLY_DATASETS:
+            print(f"  Skipping {name}: not in ONLY_DATASETS")
+            continue
+
+        if name in SKIP_DATASETS:
+            print(f"  Skipping {name}: listed in SKIP_DATASETS")
+            continue
+
         # Skip Yahoo Finance datasets in public builds (Personal/Research Use only)
         if not INCLUDE_RESTRICTED_DATA and name in OHLCV_DATASETS:
             print(f"  Skipping {name}: restricted dataset (Yahoo Finance - Personal/Research Use)")
             continue
 
         print(f"  Fetching {name}...")
+        fetch_started = perf_counter()
 
         try:
             # Fetch data using bridge
@@ -556,7 +589,7 @@ def main():
                 print(f"    Unknown source type: {source_type}, skipping")
                 continue
 
-            print(f"    Fetched {len(df)} records")
+            print(f"    Fetched {len(df)} records ({perf_counter() - fetch_started:.1f}s)")
 
             # Process based on type
             if name in OHLCV_DATASETS:
@@ -579,7 +612,7 @@ def main():
             output_file = OUTPUT_PUBLIC / f"{name}.json"
             with open(output_file, 'w') as f:
                 json.dump(dataset, f, default=str)
-            print(f"    → {output_file}")
+            print(f"    -> {output_file}")
 
             # Add summary for datasets.json (without full data)
             summary = {
@@ -592,7 +625,7 @@ def main():
             all_datasets.append(summary)
 
         except Exception as e:
-            print(f"    ✗ Error processing {name}: {e}")
+            print(f"    x Error processing {name}: {e}")
             import traceback
             traceback.print_exc()
             errors.append(f"{name}: {str(e)}")
@@ -603,18 +636,24 @@ def main():
     with open(datasets_file, 'w') as f:
         json.dump(all_datasets, f, indent=2, default=str)
     print()
-    print(f"  → {datasets_file}")
+    print(f"  -> {datasets_file}")
 
     print()
     print(f"Done! Processed {len(all_datasets)} datasets using bridge pattern.")
 
-    if errors:
+    if errors and FAIL_ON_DATA_ERRORS:
         print()
         print("Errors encountered:")
         for error in errors:
             print(f"  - {error}")
         sys.exit(1)
+    elif errors:
+        print()
+        print("Completed with non-fatal data source errors:")
+        for error in errors:
+            print(f"  - {error}")
 
 
 if __name__ == "__main__":
     main()
+

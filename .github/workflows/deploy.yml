@@ -43,6 +43,8 @@ jobs:
       - name: Generate data using bridge pattern
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          SKIP_DATASETS: ffiec_call_reports
+          FAIL_ON_DATA_ERRORS: "false"
         run: python3 scripts/prepare-data-v3.py
 
       - name: Install dependencies
