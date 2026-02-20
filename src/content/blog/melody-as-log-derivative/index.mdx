@@ -34,7 +34,7 @@ Consider two jumps that are both "100 Hz apart":
 
 Same Hz gap, very different musical meaning. Musical pitch intervals track **frequency ratio** (equivalently, differences in log-frequency), not raw Hz spacing.
 
-You can verify this quickly. Play C3 with G3, then C5 with G5. In equal temperament both are the same interval class (7 semitones; ratio 2^&#123;7/12&#125; &#8776; 1.498, close to 3:2). The Hz gap changes a lot, but the interval category does not.
+You can verify this quickly. Play C3 with G3, then C5 with G5. In equal temperament both are the same interval class (7 semitones; ratio $2^{7/12} \approx 1.498$, close to $3:2$). The Hz gap changes a lot, but the interval category does not.
 
 ---
 
@@ -55,11 +55,13 @@ That invariance is the point.
 
 If pitch structure is ratio-based, we want coordinates where ratios are easy to compare. That is exactly what logarithms do:
 
-> log(a / b) = log(a) - log(b)
+$$
+\log\!\left(\frac{a}{b}\right) = \log(a) - \log(b)
+$$
 
 Log turns ratios into differences. On a log-frequency axis, equal ratios become equal distances. A perfect fifth keeps the same spacing no matter where it appears in register.
 
-This is not just abstract math. In equal temperament, each piano key multiplies frequency by the same factor (2^&#123;1/12&#125; &#8776; 1.059). Equal key spacing corresponds to equal log-frequency steps.
+This is not just abstract math. In equal temperament, each piano key multiplies frequency by the same factor ($2^{1/12} \approx 1.059$). Equal key spacing corresponds to equal log-frequency steps.
 
 <PianoLogScale />
 <CochleaDiagram />
@@ -92,21 +94,29 @@ Now we can state the key idea precisely.
 
 In log-frequency space, a melody is a sequence of positions:
 
-> x&#8321;, x&#8322;, x&#8323;, x&#8324;, ...
+$$
+x_1, x_2, x_3, x_4, \ldots
+$$
 
 The heard intervals are the differences between consecutive positions:
 
-> x&#8322; - x&#8321;, &ensp; x&#8323; - x&#8322;, &ensp; x&#8324; - x&#8323;, &ensp; ...
+$$
+x_2 - x_1,\; x_3 - x_2,\; x_4 - x_3,\; \ldots
+$$
 
 That is a **discrete derivative** of pitch in log-frequency coordinates.
 
-Under key change (transposition), every frequency is multiplied by a constant k, so each log-position gets +log(k):
+Under key change (transposition), every frequency is multiplied by a constant $k$, so each log-position gets $+\log(k)$:
 
-> x&#8321; + log(k), &ensp; x&#8322; + log(k), &ensp; x&#8323; + log(k), &ensp; ...
+$$
+x_1 + \log(k),\; x_2 + \log(k),\; x_3 + \log(k),\; \ldots
+$$
 
 Take differences again:
 
-> [x&#8322; + log(k)] - [x&#8321; + log(k)] = x&#8322; - x&#8321;
+$$
+[x_2 + \log(k)] - [x_1 + \log(k)] = x_2 - x_1
+$$
 
 The constant cancels. The interval sequence is unchanged. So melody, represented this way, is transposition-invariant.
 

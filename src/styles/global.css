@@ -132,6 +132,13 @@ li {
   margin: 0.5rem 0;
 }
 
+/* Math rendering */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+
 /* Horizontal rules */
 hr {
   border: none;
