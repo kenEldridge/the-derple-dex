@@ -38,35 +38,36 @@ You can verify this quickly. Play C3 with G3, then C5 with G5. In equal temperam
 
 ---
 
-## Quick Check (Optional)
+## Enter the Logarithm
 
-If this feels obvious, that is fine. This is just a visual sanity check of the transposition math.
-
-- **Panel A**: absolute frequencies move when you change key.
-- **Panel B**: interval ratios between consecutive notes do not.
-
-That invariance is the point.
-
-<MelodyTranspositionPlot />
-
----
-
-## Why Ratios? Enter the Logarithm
-
-If pitch structure is ratio-based, we want coordinates where ratios are easy to compare. That is exactly what logarithms do:
+If pitch is ratio-based, we want coordinates where ratios are easy to work with. That is exactly what logarithms do. The key identity:
 
 $$
 \log\!\left(\frac{a}{b}\right) = \log(a) - \log(b)
 $$
 
-Log turns ratios into differences. On a log-frequency axis, equal ratios become equal distances. A perfect fifth keeps the same spacing no matter where it appears in register.
+Ratios become differences. Take two notes, 220 Hz and 330 Hz, and compute their distance in log-space (base-2, so the result is in octaves):
 
-This is not just abstract math. In equal temperament, each piano key multiplies frequency by the same factor ($2^{1/12} \approx 1.059$). Equal key spacing corresponds to equal log-frequency steps.
+$$
+\log_2(330) - \log_2(220) = 8.366 - 7.781 = 0.585 \text{ octaves}
+$$
+
+Now double both frequencies -- a completely different register:
+
+$$
+\log_2(660) - \log_2(440) = 9.366 - 8.781 = 0.585 \text{ octaves}
+$$
+
+Different frequencies, different log values, same difference.
+
+Multiply by 12 to convert octaves to semitones: $0.585 \times 12 \approx 7.02$ semitones. That is a perfect fifth, whether you play it at 220 Hz or 4400 Hz.
+
+This means that on a log-frequency axis, equal ratios become equal distances. And that is exactly how a piano keyboard is built: in equal temperament, each key multiplies frequency by $2^{1/12} \approx 1.059$. Equal key spacing = equal log-frequency steps = equal ratios.
 
 <PianoLogScale />
 <CochleaDiagram />
 
-*Top: piano keys space octaves evenly, while a linear Hz axis does not. Bottom: the cochlea behaves similarly at first approximation: equal octave steps map to roughly equal membrane distances, while the Hz range doubles each octave (orange curve). This panel uses a simplified illustrative range to make spacing obvious, not a full hearing-range map.*
+*Top: the piano spaces each octave evenly, while a linear Hz axis does not -- low notes get crammed together. Bottom: the cochlea does the same thing. Each octave gets equal membrane length, even though the Hz range doubles each time (orange curve). This panel uses a simplified illustrative range, not a full hearing-range map.*
 
 ---
 
@@ -76,7 +77,7 @@ The cochlea -- the spiral structure of the inner ear -- is tonotopic: different 
 
 ![Uncoiled cochlea with basilar membrane, showing frequency regions from 1600 Hz at the base to 25 Hz at the apex](./uncoiled_cochlea.png)
 
-*The cochlea, uncoiled. The basilar membrane widens from base (narrow, stiff, high-frequency) to apex (wide, more compliant, low-frequency). The labels suggest an approximately log-like map. In this schematic, the 25-1600 Hz labels are illustrative landmarks, not the full human audible range (~20-20,000 Hz). Diagram by Kern et al., [CC BY 2.5](https://creativecommons.org/licenses/by/2.5/).*
+*The cochlea, uncoiled. The basilar membrane widens from base (narrow, stiff, high-frequency) to apex (wide, more compliant, low-frequency). The labels suggest an approximately log-like map. In this schematic, the 25--1600 Hz labels are illustrative landmarks, not the full human audible range (~20--20,000 Hz). Diagram by Kern et al., [CC BY 2.5](https://creativecommons.org/licenses/by/2.5/).*
 
 Why this shape? The basilar membrane is narrow and stiff at the base, wide and compliant at the apex. A stiff region resonates at high frequencies (like a short, tight guitar string); a compliant region resonates at low frequencies (like a long, loose one). The stiffness drops roughly exponentially along the membrane's length, which is the main driver of the logarithmic frequency map. Other factors -- effective mass, damping, cochlear fluid coupling, active amplification by outer hair cells -- refine the picture, but the stiffness gradient is the core of it.
 
@@ -85,6 +86,19 @@ Why this shape? The basilar membrane is narrow and stiff at the base, wide and c
 [Georg von Bekesy](https://en.wikipedia.org/wiki/Georg_von_B%C3%A9k%C3%A9sy) worked this out in the 1940s--50s, earning the 1961 Nobel Prize in Physiology or Medicine. He dissected human cochleae, dusted the basilar membrane with silver flakes, and used strobe photography to watch it vibrate. What he saw was a **traveling wave**: sound entering the ear sends a ripple down the membrane, and the ripple peaks at a position determined by frequency. High-pitched sounds peak near the stiff base; low-pitched sounds travel further and peak near the compliant apex. Each point on the membrane is essentially tuned to a specific frequency -- a physical frequency analyzer, with the frequency axis laid out approximately logarithmically.
 
 The logarithm here is not just a convenient transform. The cochlea's tonotopic map is a major reason interval perception aligns with ratios. Ratio detection is built into the hardware.
+
+---
+
+## See It for Yourself
+
+Now that we know intervals are ratios, and ratios become differences in log-space, here is the payoff. Change the key below and watch what happens:
+
+- **Panel A**: absolute frequencies shift with every key change.
+- **Panel B**: interval ratios between consecutive notes stay fixed.
+
+Those ratios *are* the melody. The key change multiplies every frequency by the same constant, but the ratios -- the log-differences -- don't budge.
+
+<MelodyTranspositionPlot />
 
 ---
 
@@ -118,9 +132,7 @@ $$
 [x_2 + \log(k)] - [x_1 + \log(k)] = x_2 - x_1
 $$
 
-The constant cancels. The interval sequence is unchanged. So melody, represented this way, is transposition-invariant.
-
-Scope note: this post explains what transposition preserves (interval structure in log-frequency), not how tonal center is established. Tonic perception depends strongly on musical context.
+The constant cancels. The interval sequence is unchanged. Melody, defined as the sequence of intervals in log-frequency space, is transposition-invariant.
 
 ---
 
@@ -131,15 +143,7 @@ This invariance is strong, but not absolute.
 - **Timbre shifts with register.** A melody in sub-bass and the same melody in mid-range can feel different because harmonic balance and auditory sensitivity change.
 - **Extreme key changes.** Push far enough and notes leave the range where pitch cues support melody robustly (roughly tens of Hz up to a few kHz).
 
-These are limits on perception, not a contradiction of the core log-interval model.
-
----
-
-## Scope Boundary
-
-The claim here is narrow: melody survives key changes because interval structure is preserved in log-frequency space.
-
-Questions about tonic, tonal gravity, and why one pitch feels like "home" are real and important, but they are a separate layer of perception.
+These are limits on perception, not a contradiction of the core log-interval model. And the claim here is deliberately narrow: melody survives key changes because interval structure is preserved in log-frequency space. Questions about tonic, tonal gravity, and why one pitch feels like "home" are real and important, but they are a separate layer of perception.
 
 ---
 
