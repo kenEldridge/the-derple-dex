@@ -2,6 +2,7 @@
 title: 'Melody as a Log-Derivative: Why Songs Survive Key Changes'
 description: 'Why the logarithm is not just a mathematical convenience, but the ear''s native pitch coordinate system -- and why that makes melody survive key changes'
 pubDate: 2026-02-19
+heroImage: ./thumbnail.png
 ---
 
 import MelodyTranspositionPlot from '../../../components/MelodyTranspositionPlot.astro';
@@ -63,7 +64,7 @@ This is not just abstract math. In equal temperament, each piano key multiplies 
 <PianoLogScale />
 <CochleaDiagram />
 
-*Top: piano keys space octaves evenly, while a linear Hz axis does not. Bottom: the cochlea behaves similarly at first approximation: equal octave steps map to roughly equal membrane distances, while the Hz range doubles each octave (orange curve).*
+*Top: piano keys space octaves evenly, while a linear Hz axis does not. Bottom: the cochlea behaves similarly at first approximation: equal octave steps map to roughly equal membrane distances, while the Hz range doubles each octave (orange curve). This panel uses a simplified illustrative range to make spacing obvious, not a full hearing-range map.*
 
 ---
 
@@ -73,7 +74,7 @@ The cochlea -- the spiral structure of the inner ear -- is tonotopic: different 
 
 ![Uncoiled cochlea with basilar membrane, showing frequency regions from 1600 Hz at the base to 25 Hz at the apex](./uncoiled_cochlea.png)
 
-*The cochlea, uncoiled. The basilar membrane widens from base (narrow, stiff, high-frequency) to apex (wide, more compliant, low-frequency). The labels suggest an approximately log-like map. Diagram by Kern et al., [CC BY 2.5](https://creativecommons.org/licenses/by/2.5/).*
+*The cochlea, uncoiled. The basilar membrane widens from base (narrow, stiff, high-frequency) to apex (wide, more compliant, low-frequency). The labels suggest an approximately log-like map. In this schematic, the 25-1600 Hz labels are illustrative landmarks, not the full human audible range (~20-20,000 Hz). Diagram by Kern et al., [CC BY 2.5](https://creativecommons.org/licenses/by/2.5/).*
 
 Why this shape? The basilar membrane is narrow and stiff at the base, wide and compliant at the apex. A stiff region resonates at high frequencies (like a short, tight guitar string); a compliant region resonates at low frequencies (like a long, loose one). The stiffness drops roughly exponentially along the membrane's length, which is the main driver of the logarithmic frequency map. Other factors -- effective mass, damping, cochlear fluid coupling, active amplification by outer hair cells -- refine the picture, but the stiffness gradient is the core of it.
 
