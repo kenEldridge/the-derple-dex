@@ -46,6 +46,70 @@
 		name: 'Total dissonance'
 	};
 
+	// 12-TET reference note positions across one octave.
+	// These are optional overlays to compare equal-tempered note placements
+	// against local minima/reference interval lines.
+	const twelveTetSteps = [
+		{semitone: 0, label: 'Unison'},
+		{semitone: 1, label: 'm2'},
+		{semitone: 2, label: 'M2'},
+		{semitone: 3, label: 'm3'},
+		{semitone: 4, label: 'M3'},
+		{semitone: 5, label: 'P4'},
+		{semitone: 6, label: 'TT'},
+		{semitone: 7, label: 'P5'},
+		{semitone: 8, label: 'm6'},
+		{semitone: 9, label: 'M6'},
+		{semitone: 10, label: 'm7'},
+		{semitone: 11, label: 'M7'},
+		{semitone: 12, label: 'Octave'}
+	];
+
+	const yMinB = Math.min(...dissonance);
+	const yMaxB = Math.max(...dissonance);
+	const yPadB = (yMaxB - yMinB) * 0.02;
+	const xTet = [];
+	const yTet = [];
+	const textTet = [];
+
+	for (const step of twelveTetSteps) {
+		const ratio = Math.pow(2, step.semitone / 12);
+		xTet.push(ratio, ratio, null);
+		yTet.push(yMinB - yPadB, yMaxB + yPadB, null);
+		textTet.push(
+			`${step.label}: 2^(${step.semitone}/12) = ${ratio.toFixed(4)}`,
+			`${step.label}: 2^(${step.semitone}/12) = ${ratio.toFixed(4)}`,
+			null
+		);
+	}
+
+	const traceBTwelveTet = {
+		x: xTet,
+		y: yTet,
+		type: 'scatter',
+		mode: 'lines',
+		line: {color: 'rgba(255,255,255,0.28)', width: 1, dash: 'dot'},
+		name: '12-TET note positions',
+		visible: false,
+		hoverinfo: 'text',
+		text: textTet,
+		showlegend: false
+	};
+
+	const traceBTwelveTetLabels = {
+		x: twelveTetSteps.map(step => Math.pow(2, step.semitone / 12)),
+		y: twelveTetSteps.map(() => yMaxB + yPadB * 0.1),
+		type: 'scatter',
+		mode: 'text',
+		text: twelveTetSteps.map(step => step.label),
+		textposition: 'top center',
+		textfont: {color: 'rgba(255,255,255,0.78)', size: 10},
+		hoverinfo: 'skip',
+		cliponaxis: false,
+		visible: false,
+		showlegend: false
+	};
+
 	const shapesB = intervals.map(interval => ({
 		type: 'line',
 		x0: interval.ratio,
@@ -64,11 +128,40 @@
 		font: {color: 'white'},
 		shapes: shapesB,
 		showlegend: false,
-		margin: {l: 60, r: 20, t: 20, b: 60}
+		margin: {l: 60, r: 20, t: 90, b: 60},
+		updatemenus: [{
+			type: 'buttons',
+			direction: 'right',
+			x: 1,
+			xanchor: 'right',
+			y: 1.16,
+			yanchor: 'top',
+			bgcolor: 'rgba(20,20,20,0.85)',
+			bordercolor: 'rgba(255,255,255,0.2)',
+			borderwidth: 1,
+			active: 0,
+			buttons: [
+				{
+					label: '12-TET: Off',
+					method: 'restyle',
+					args: [{visible: [true, false, false]}]
+				},
+				{
+					label: '12-TET: Lines',
+					method: 'restyle',
+					args: [{visible: [true, true, false]}]
+				},
+				{
+					label: '12-TET: Lines+Labels',
+					method: 'restyle',
+					args: [{visible: [true, true, true]}]
+				}
+			]
+		}]
 	};
 
 	const config = {responsive: true};
-	Plotly.newPlot('plot-b', [traceB], layoutB, config);
+	Plotly.newPlot('plot-b', [traceB, traceBTwelveTet, traceBTwelveTetLabels], layoutB, config);
 </script>
 
 <style>
