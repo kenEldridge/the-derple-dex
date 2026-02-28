@@ -2,6 +2,28 @@
 // Panel B: Total dissonance
 ---
 
+<div class="plot-b-controls">
+	<label class="plot-b-control plot-b-toggle">
+		<input id="plot-b-show-minima" type="checkbox" checked />
+		Show minima guide lines
+	</label>
+	<label class="plot-b-control" for="plot-b-overlay-mode">
+		Overlay
+		<select id="plot-b-overlay-mode">
+			<option value="off">Off</option>
+			<option value="intervals">12-TET intervals</option>
+			<option value="scale" selected>Diatonic scale notes</option>
+		</select>
+	</label>
+	<label class="plot-b-control" for="plot-b-key">
+		Key
+		<select id="plot-b-key"></select>
+	</label>
+	<label class="plot-b-control" for="plot-b-scale">
+		Scale
+		<select id="plot-b-scale"></select>
+	</label>
+</div>
 <div id="plot-b"></div>
 
 <script>
@@ -12,162 +34,316 @@
 		return Math.exp(-3.5 * x) - Math.exp(-5.75 * x);
 	}
 
-	const f0 = 200.0;
-	const numPartials = 30;
-	const partials = Array.from({length: numPartials}, (_, i) => i + 1);
+	const plotContainer = document.getElementById('plot-b');
+	const minimaToggle = document.getElementById('plot-b-show-minima');
+	const overlaySelect = document.getElementById('plot-b-overlay-mode');
+	const keySelect = document.getElementById('plot-b-key');
+	const scaleSelect = document.getElementById('plot-b-scale');
 
-	const intervals = [
-		{name: 'Major third (5:4)', ratio: 5/4},
-		{name: 'Perfect fourth (4:3)', ratio: 4/3},
-		{name: 'Perfect fifth (3:2)', ratio: 3/2},
-		{name: 'Octave (2:1)', ratio: 2.0}
-	];
+	if (!plotContainer || !minimaToggle || !overlaySelect || !keySelect || !scaleSelect) {
+		console.warn('Plot B controls were not found.');
+	} else {
+		const f0 = 200.0;
+		const numPartials = 30;
+		const partials = Array.from({length: numPartials}, (_, i) => i + 1);
+		const ratiosB = Array.from({length: 600}, (_, i) => 1.0 + i * (1.0 / 599));
+		const fA = partials.map(p => p * f0);
 
-	const ratiosB = Array.from({length: 600}, (_, i) => 1.0 + i * (1.0 / 599));
-	const fA = partials.map(p => p * f0);
-
-	const dissonance = ratiosB.map(r => {
-		const fB = partials.map(p => p * f0 * r);
-		let sum = 0;
-		for (let i = 0; i < fA.length; i++) {
-			for (let j = 0; j < fB.length; j++) {
-				sum += roughness(Math.abs(fA[i] - fB[j]));
-			}
-		}
-		return sum;
-	});
-
-	const traceB = {
-		x: ratiosB,
-		y: dissonance,
-		type: 'scatter',
-		mode: 'lines',
-		line: {color: '#64b5f6', width: 2},
-		name: 'Total dissonance'
-	};
-
-	// 12-TET reference note positions across one octave.
-	// These are optional overlays to compare equal-tempered note placements
-	// against local minima/reference interval lines.
-	const twelveTetSteps = [
-		{semitone: 0, label: 'Unison'},
-		{semitone: 1, label: 'm2'},
-		{semitone: 2, label: 'M2'},
-		{semitone: 3, label: 'm3'},
-		{semitone: 4, label: 'M3'},
-		{semitone: 5, label: 'P4'},
-		{semitone: 6, label: 'TT'},
-		{semitone: 7, label: 'P5'},
-		{semitone: 8, label: 'm6'},
-		{semitone: 9, label: 'M6'},
-		{semitone: 10, label: 'm7'},
-		{semitone: 11, label: 'M7'},
-		{semitone: 12, label: 'Octave'}
-	];
-
-	const yMinB = Math.min(...dissonance);
-	const yMaxB = Math.max(...dissonance);
-	const yPadB = (yMaxB - yMinB) * 0.02;
-	const xTet = [];
-	const yTet = [];
-	const textTet = [];
-
-	for (const step of twelveTetSteps) {
-		const ratio = Math.pow(2, step.semitone / 12);
-		xTet.push(ratio, ratio, null);
-		yTet.push(yMinB - yPadB, yMaxB + yPadB, null);
-		textTet.push(
-			`${step.label}: 2^(${step.semitone}/12) = ${ratio.toFixed(4)}`,
-			`${step.label}: 2^(${step.semitone}/12) = ${ratio.toFixed(4)}`,
-			null
-		);
-	}
-
-	const traceBTwelveTet = {
-		x: xTet,
-		y: yTet,
-		type: 'scatter',
-		mode: 'lines',
-		line: {color: 'rgba(255,255,255,0.28)', width: 1, dash: 'dot'},
-		name: '12-TET note positions',
-		visible: false,
-		hoverinfo: 'text',
-		text: textTet,
-		showlegend: false
-	};
-
-	const traceBTwelveTetLabels = {
-		x: twelveTetSteps.map(step => Math.pow(2, step.semitone / 12)),
-		y: twelveTetSteps.map(() => yMaxB + yPadB * 0.1),
-		type: 'scatter',
-		mode: 'text',
-		text: twelveTetSteps.map(step => step.label),
-		textposition: 'top center',
-		textfont: {color: 'rgba(255,255,255,0.78)', size: 10},
-		hoverinfo: 'skip',
-		cliponaxis: false,
-		visible: false,
-		showlegend: false
-	};
-
-	const shapesB = intervals.map(interval => ({
-		type: 'line',
-		x0: interval.ratio,
-		x1: interval.ratio,
-		y0: 0,
-		y1: 1,
-		yref: 'paper',
-		line: {color: 'rgba(255,255,255,0.4)', width: 1, dash: 'dot'}
-	}));
-
-	const layoutB = {
-		xaxis: {title: 'Frequency ratio (interval)', gridcolor: 'rgba(255,255,255,0.2)'},
-		yaxis: {title: 'Summed dissonance', gridcolor: 'rgba(255,255,255,0.2)'},
-		paper_bgcolor: '#000000',
-		plot_bgcolor: '#000000',
-		font: {color: 'white'},
-		shapes: shapesB,
-		showlegend: false,
-		margin: {l: 60, r: 20, t: 90, b: 60},
-		updatemenus: [{
-			type: 'buttons',
-			direction: 'right',
-			x: 1,
-			xanchor: 'right',
-			y: 1.16,
-			yanchor: 'top',
-			bgcolor: 'rgba(20,20,20,0.85)',
-			bordercolor: 'rgba(255,255,255,0.2)',
-			borderwidth: 1,
-			active: 0,
-			buttons: [
-				{
-					label: '12-TET: Off',
-					method: 'restyle',
-					args: [{visible: [true, false, false]}]
-				},
-				{
-					label: '12-TET: Lines',
-					method: 'restyle',
-					args: [{visible: [true, true, false]}]
-				},
-				{
-					label: '12-TET: Lines+Labels',
-					method: 'restyle',
-					args: [{visible: [true, true, true]}]
+		const dissonance = ratiosB.map(r => {
+			const fB = partials.map(p => p * f0 * r);
+			let sum = 0;
+			for (let i = 0; i < fA.length; i++) {
+				for (let j = 0; j < fB.length; j++) {
+					sum += roughness(Math.abs(fA[i] - fB[j]));
 				}
-			]
-		}]
-	};
+			}
+			return sum;
+		});
 
-	const config = {responsive: true};
-	Plotly.newPlot('plot-b', [traceB, traceBTwelveTet, traceBTwelveTetLabels], layoutB, config);
+		const intervals = [
+			{name: 'Major third (5:4)', ratio: 5 / 4},
+			{name: 'Perfect fourth (4:3)', ratio: 4 / 3},
+			{name: 'Perfect fifth (3:2)', ratio: 3 / 2},
+			{name: 'Octave (2:1)', ratio: 2.0}
+		];
+
+		const twelveTetSteps = [
+			{semitone: 0, label: 'Unison'},
+			{semitone: 1, label: 'm2'},
+			{semitone: 2, label: 'M2'},
+			{semitone: 3, label: 'm3'},
+			{semitone: 4, label: 'M3'},
+			{semitone: 5, label: 'P4'},
+			{semitone: 6, label: 'TT'},
+			{semitone: 7, label: 'P5'},
+			{semitone: 8, label: 'm6'},
+			{semitone: 9, label: 'M6'},
+			{semitone: 10, label: 'm7'},
+			{semitone: 11, label: 'M7'},
+			{semitone: 12, label: 'Octave'}
+		];
+
+		const keyOptions = [
+			{label: 'C', root: 0},
+			{label: 'C#', root: 1},
+			{label: 'D', root: 2},
+			{label: 'Eb', root: 3},
+			{label: 'E', root: 4},
+			{label: 'F', root: 5},
+			{label: 'F#', root: 6},
+			{label: 'G', root: 7},
+			{label: 'Ab', root: 8},
+			{label: 'A', root: 9},
+			{label: 'Bb', root: 10},
+			{label: 'B', root: 11}
+		];
+
+		const noteNames = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+		const scales = [
+			{value: 'major', label: 'Major (Ionian)', semitones: [0, 2, 4, 5, 7, 9, 11, 12]},
+			{value: 'naturalMinor', label: 'Natural Minor (Aeolian)', semitones: [0, 2, 3, 5, 7, 8, 10, 12]},
+			{value: 'harmonicMinor', label: 'Harmonic Minor', semitones: [0, 2, 3, 5, 7, 8, 11, 12]},
+			{value: 'melodicMinor', label: 'Melodic Minor', semitones: [0, 2, 3, 5, 7, 9, 11, 12]},
+			{value: 'dorian', label: 'Dorian', semitones: [0, 2, 3, 5, 7, 9, 10, 12]},
+			{value: 'mixolydian', label: 'Mixolydian', semitones: [0, 2, 4, 5, 7, 9, 10, 12]},
+			{value: 'pentatonicMajor', label: 'Pentatonic Major', semitones: [0, 2, 4, 7, 9, 12]},
+			{value: 'pentatonicMinor', label: 'Pentatonic Minor', semitones: [0, 3, 5, 7, 10, 12]}
+		];
+
+		for (const key of keyOptions) {
+			const option = document.createElement('option');
+			option.value = String(key.root);
+			option.textContent = key.label;
+			keySelect.appendChild(option);
+		}
+
+		for (const scale of scales) {
+			const option = document.createElement('option');
+			option.value = scale.value;
+			option.textContent = scale.label;
+			scaleSelect.appendChild(option);
+		}
+
+		keySelect.value = '0';
+		scaleSelect.value = 'major';
+
+		const yMinB = Math.min(...dissonance);
+		const yMaxB = Math.max(...dissonance);
+		const yPadB = (yMaxB - yMinB) * 0.02;
+
+		const shapesB = intervals.map(interval => ({
+			type: 'line',
+			x0: interval.ratio,
+			x1: interval.ratio,
+			y0: 0,
+			y1: 1,
+			yref: 'paper',
+			line: {color: 'rgba(255,255,255,0.4)', width: 1, dash: 'dot'}
+		}));
+
+		const baseTrace = {
+			x: ratiosB,
+			y: dissonance,
+			type: 'scatter',
+			mode: 'lines',
+			line: {color: '#64b5f6', width: 2},
+			name: 'Total dissonance'
+		};
+
+		function buildOverlayEntries(mode, keyRoot, scaleValue, selectedKeyLabel) {
+			if (mode === 'off') {
+				return [];
+			}
+
+			if (mode === 'intervals') {
+				return twelveTetSteps.map(step => ({
+					semitone: step.semitone,
+					label: step.label
+				}));
+			}
+
+			const selectedScale = scales.find(scale => scale.value === scaleValue) || scales[0];
+			return selectedScale.semitones.map((semitone, idx) => {
+				const degree = idx + 1;
+				const note = semitone === 12
+					? selectedKeyLabel
+					: noteNames[(keyRoot + semitone) % 12];
+				return {semitone, label: `${note} (${degree})`};
+			});
+		}
+
+		function buildOverlayTraces(mode, keyRoot, scaleValue) {
+			const selectedKey = keyOptions.find(key => key.root === keyRoot) || keyOptions[0];
+			const entries = buildOverlayEntries(mode, keyRoot, scaleValue, selectedKey.label);
+
+			if (entries.length === 0) {
+				return [
+					{
+						x: [],
+						y: [],
+						type: 'scatter',
+						mode: 'lines',
+						line: {color: 'rgba(255,255,255,0.28)', width: 1, dash: 'dot'},
+						hoverinfo: 'skip',
+						showlegend: false
+					},
+					{
+						x: [],
+						y: [],
+						type: 'scatter',
+						mode: 'text',
+						text: [],
+						hoverinfo: 'skip',
+						showlegend: false
+					}
+				];
+			}
+
+			const xLines = [];
+			const yLines = [];
+			const hoverText = [];
+			const xLabels = [];
+			const yLabels = [];
+			const labels = [];
+
+			for (const entry of entries) {
+				const ratio = Math.pow(2, entry.semitone / 12);
+				xLines.push(ratio, ratio, null);
+				yLines.push(yMinB - yPadB, yMaxB + yPadB, null);
+				hoverText.push(
+					`${entry.label}: 2^(${entry.semitone}/12) = ${ratio.toFixed(4)}`,
+					`${entry.label}: 2^(${entry.semitone}/12) = ${ratio.toFixed(4)}`,
+					null
+				);
+				xLabels.push(ratio);
+				yLabels.push(yMaxB + yPadB * 0.1);
+				labels.push(entry.label);
+			}
+
+			const lineColor = mode === 'intervals'
+				? 'rgba(255,255,255,0.28)'
+				: 'rgba(147,197,253,0.5)';
+			const labelColor = mode === 'intervals'
+				? 'rgba(255,255,255,0.78)'
+				: 'rgba(191,219,254,0.95)';
+
+			return [
+				{
+					x: xLines,
+					y: yLines,
+					type: 'scatter',
+					mode: 'lines',
+					line: {color: lineColor, width: 1, dash: 'dot'},
+					hoverinfo: 'text',
+					text: hoverText,
+					showlegend: false
+				},
+				{
+					x: xLabels,
+					y: yLabels,
+					type: 'scatter',
+					mode: 'text',
+					text: labels,
+					textposition: 'top center',
+					textfont: {color: labelColor, size: 10},
+					hoverinfo: 'skip',
+					cliponaxis: false,
+					showlegend: false
+				}
+			];
+		}
+
+		function buildLayout(showMinima) {
+			return {
+				xaxis: {title: 'Frequency ratio (interval)', gridcolor: 'rgba(255,255,255,0.2)'},
+				yaxis: {title: 'Summed dissonance', gridcolor: 'rgba(255,255,255,0.2)'},
+				paper_bgcolor: '#000000',
+				plot_bgcolor: '#000000',
+				font: {color: 'white'},
+				shapes: showMinima ? shapesB : [],
+				showlegend: false,
+				margin: {l: 60, r: 20, t: 65, b: 60}
+			};
+		}
+
+		function renderPlot() {
+			const mode = overlaySelect.value;
+			const keyRoot = Number(keySelect.value);
+			const scaleValue = scaleSelect.value;
+			const showMinima = minimaToggle.checked;
+
+			const disableScaleControls = mode !== 'scale';
+			keySelect.disabled = disableScaleControls;
+			scaleSelect.disabled = disableScaleControls;
+
+			const overlayTraces = buildOverlayTraces(mode, keyRoot, scaleValue);
+			const layout = buildLayout(showMinima);
+			const config = {responsive: true};
+			Plotly.react(plotContainer, [baseTrace, ...overlayTraces], layout, config);
+		}
+
+		minimaToggle.addEventListener('change', renderPlot);
+		overlaySelect.addEventListener('change', renderPlot);
+		keySelect.addEventListener('change', renderPlot);
+		scaleSelect.addEventListener('change', renderPlot);
+
+		renderPlot();
+	}
 </script>
 
 <style>
+	.plot-b-controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		align-items: center;
+		margin: 1rem 0 0.25rem;
+	}
+
+	.plot-b-control {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		color: #e5e7eb;
+		font-size: 0.92rem;
+	}
+
+	.plot-b-toggle {
+		padding-right: 0.5rem;
+	}
+
+	.plot-b-toggle input {
+		accent-color: #93c5fd;
+	}
+
+	.plot-b-control select {
+		background: #0f172a;
+		color: #f8fafc;
+		border: 1px solid rgba(148, 163, 184, 0.45);
+		border-radius: 6px;
+		padding: 0.22rem 0.45rem;
+		color-scheme: dark;
+	}
+
+	.plot-b-control select option {
+		background: #0f172a;
+		color: #f8fafc;
+	}
+
+	.plot-b-control select:focus-visible {
+		outline: 2px solid #93c5fd;
+		outline-offset: 1px;
+		border-color: #93c5fd;
+	}
+
+	.plot-b-control select:disabled {
+		opacity: 0.7;
+		color: #cbd5e1;
+	}
+
 	#plot-b {
 		width: 100%;
 		height: 400px;
-		margin: 1.5rem 0;
+		margin: 0.8rem 0 1.5rem;
 	}
 </style>
