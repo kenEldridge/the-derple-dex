@@ -115,11 +115,21 @@ th, td {
   padding: 0.75rem;
   border: 1px solid var(--border);
   text-align: left;
+  vertical-align: top;
 }
 
 th {
   background-color: var(--bg-secondary);
   font-weight: 600;
+}
+
+td ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+td ul li {
+  margin: 0.35rem 0;
 }
 
 /* Lists */
