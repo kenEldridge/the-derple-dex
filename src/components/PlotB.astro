@@ -4,7 +4,7 @@
 
 <div class="plot-b-controls">
 	<label class="plot-b-control plot-b-toggle">
-		<input id="plot-b-show-minima" type="checkbox" checked />
+		<input id="plot-b-show-minima" type="checkbox" />
 		Show minima guide lines
 	</label>
 	<label class="plot-b-control" for="plot-b-overlay-mode">
@@ -13,6 +13,13 @@
 			<option value="off">Off</option>
 			<option value="intervals">12-TET intervals</option>
 			<option value="scale" selected>Diatonic scale notes</option>
+		</select>
+	</label>
+	<label class="plot-b-control" for="plot-b-x-scale">
+		X-axis
+		<select id="plot-b-x-scale">
+			<option value="linear">Linear</option>
+			<option value="log" selected>Log</option>
 		</select>
 	</label>
 	<label class="plot-b-control" for="plot-b-key">
@@ -37,10 +44,11 @@
 	const plotContainer = document.getElementById('plot-b');
 	const minimaToggle = document.getElementById('plot-b-show-minima');
 	const overlaySelect = document.getElementById('plot-b-overlay-mode');
+	const xScaleSelect = document.getElementById('plot-b-x-scale');
 	const keySelect = document.getElementById('plot-b-key');
 	const scaleSelect = document.getElementById('plot-b-scale');
 
-	if (!plotContainer || !minimaToggle || !overlaySelect || !keySelect || !scaleSelect) {
+	if (!plotContainer || !minimaToggle || !overlaySelect || !xScaleSelect || !keySelect || !scaleSelect) {
 		console.warn('Plot B controls were not found.');
 	} else {
 		const f0 = 200.0;
@@ -126,6 +134,7 @@
 
 		keySelect.value = '0';
 		scaleSelect.value = 'major';
+		xScaleSelect.value = 'log';
 
 		const yMinB = Math.min(...dissonance);
 		const yMaxB = Math.max(...dissonance);
@@ -253,9 +262,16 @@
 			];
 		}
 
-		function buildLayout(showMinima) {
+		function buildLayout(showMinima, xScaleMode) {
+			const isLogScale = xScaleMode === 'log';
 			return {
-				xaxis: {title: 'Frequency ratio (interval)', showgrid: false, zeroline: false},
+				xaxis: {
+					title: isLogScale ? 'Frequency ratio (interval, log scale)' : 'Frequency ratio (interval)',
+					type: isLogScale ? 'log' : 'linear',
+					range: isLogScale ? [0, Math.log10(2)] : [1, 2],
+					showgrid: false,
+					zeroline: false
+				},
 				yaxis: {title: 'Summed dissonance', showgrid: false, zeroline: false},
 				paper_bgcolor: '#000000',
 				plot_bgcolor: '#000000',
@@ -268,6 +284,7 @@
 
 		function renderPlot() {
 			const mode = overlaySelect.value;
+			const xScaleMode = xScaleSelect.value;
 			const keyRoot = Number(keySelect.value);
 			const scaleValue = scaleSelect.value;
 			const showMinima = minimaToggle.checked;
@@ -277,13 +294,14 @@
 			scaleSelect.disabled = disableScaleControls;
 
 			const overlayTraces = buildOverlayTraces(mode, keyRoot, scaleValue);
-			const layout = buildLayout(showMinima);
+			const layout = buildLayout(showMinima, xScaleMode);
 			const config = {responsive: true};
 			Plotly.react(plotContainer, [baseTrace, ...overlayTraces], layout, config);
 		}
 
 		minimaToggle.addEventListener('change', renderPlot);
 		overlaySelect.addEventListener('change', renderPlot);
+		xScaleSelect.addEventListener('change', renderPlot);
 		keySelect.addEventListener('change', renderPlot);
 		scaleSelect.addEventListener('change', renderPlot);
 
