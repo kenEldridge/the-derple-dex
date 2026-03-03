@@ -30,3 +30,12 @@ public/data/
 __pycache__/
 *.pyc
 .python-version
+
+# sentence_bd pipeline artifacts (regenerated from code + EPUBs)
+apature/sentence_bd/output/
+apature/sentence_bd/build/
+apature/sentence_bd/epubs_unpacked/
+apature/sentence_bd/epubs.zip
+apature/sentence_bd/book_sbd/.pytest_cache/
+apature/sentence_bd/book_sbd/tests/fixtures/gold/
+apature/sentence_bd/sbd_output_*.zip
