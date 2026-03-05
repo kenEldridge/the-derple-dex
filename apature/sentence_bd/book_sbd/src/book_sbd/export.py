@@ -14,7 +14,7 @@ from . import __version__
 def export_book(book_data: dict, output_dir: str) -> str:
     """Export book to JSON.
 
-    Schema:
+    Schema (v1.1.0):
     {
       "title": str,
       "author": str,
@@ -29,7 +29,8 @@ def export_book(book_data: dict, output_dir: str) -> str:
           "label": str | null,
           "sentence_count": int,
           "sentences": [
-            {"number": int, "text": str, "start": int, "end": int, "char_len": int}
+            {"number": int, "text": str, "start": int, "end": int,
+             "char_len": int, "type": "prose"|"verse"}
           ]
         }
       ],
@@ -50,12 +51,14 @@ def export_book(book_data: dict, output_dir: str) -> str:
     for ch in book_data["processed_chapters"]:
         sentences_out = []
         for s in ch["sentences"]:
+            # Logical key order: number, text, type, start, end, char_len
             sentences_out.append({
-                "char_len": s["end"] - s["start"],
-                "end": s["end"],
                 "number": s["number"],
-                "start": s["start"],
                 "text": s["text"],
+                "type": s.get("type", "prose"),
+                "start": s["start"],
+                "end": s["end"],
+                "char_len": s["end"] - s["start"],
             })
         total_sentences += len(sentences_out)
         total_chars += sum(s["char_len"] for s in sentences_out)
@@ -86,7 +89,7 @@ def export_book(book_data: dict, output_dir: str) -> str:
     os.makedirs(output_dir, exist_ok=True)
     out_path = os.path.join(output_dir, f"{slug}.json")
 
-    content = json.dumps(output, sort_keys=True, ensure_ascii=False, indent=2) + "\n"
+    content = json.dumps(output, sort_keys=False, ensure_ascii=False, indent=2) + "\n"
     with open(out_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(content)
 

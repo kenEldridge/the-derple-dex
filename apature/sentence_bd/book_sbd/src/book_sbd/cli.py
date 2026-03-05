@@ -24,6 +24,7 @@ from .numbering import number_chapters, number_sentences
 from .pipeline import ingest_book, write_chapter_units_json, check_license_leakage
 from .segment.punkt_backend import PunktSegmenter
 from .segment.patch_rules import apply_patch_rules
+from .segment.text_modes import apply_text_modes, get_sentence_type
 
 
 def process_book(
@@ -58,22 +59,29 @@ def process_book(
 
     for ch in chapters:
         canonical = canonicalize(ch.text)
-        spans = segmenter.segment(canonical)
-        spans = apply_patch_rules(canonical, spans)
+
+        # Apply text mode classification and normalization
+        processed_text, block_metadata = apply_text_modes(canonical)
+
+        # Segment the mode-normalized text
+        spans = segmenter.segment(processed_text)
+        spans = apply_patch_rules(processed_text, spans, block_metadata)
 
         sentences = []
         for i, (start, end) in enumerate(spans):
+            sent_type = get_sentence_type(start, end, block_metadata)
             sentences.append({
                 "number": i + 1,
                 "start": start,
                 "end": end,
-                "text": canonical[start:end],
+                "text": processed_text[start:end],
+                "type": sent_type,
             })
 
         processed_chapters.append({
             "number": ch.number,
             "label": ch.label,
-            "canonical_text": canonical,
+            "canonical_text": processed_text,
             "sentences": sentences,
         })
 
@@ -170,8 +178,9 @@ def cmd_eval(args):
         pred_spans = {}
         for ch in book_data["chapters"]:
             ct = canonicalize(ch.text)
-            spans = segmenter.segment(ct)
-            spans = apply_patch_rules(ct, spans)
+            processed_text, _ = apply_text_modes(ct)
+            spans = segmenter.segment(processed_text)
+            spans = apply_patch_rules(processed_text, spans)
             pred_spans[ch.number] = spans
 
         result = evaluate_book(pred_spans, gold)
