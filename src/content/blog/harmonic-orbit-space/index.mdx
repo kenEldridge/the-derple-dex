@@ -1,0 +1,184 @@
+---
+title: 'Harmonic Orbit Space: A Song''s Tonal Center of Gravity'
+description: 'How to map harmonic content to a moving point on the circle of fifths, and why being near the center does not mean dissonance'
+pubDate: 2026-03-06
+---
+
+import HarmonicOrbitViewer from '../../../components/HarmonicOrbitViewer.astro';
+
+<HarmonicOrbitViewer />
+
+---
+
+*Intuition-first. For method details, see [notes](#notes). Content generated via LLM collaboration - see [authorship](#authorship).*
+
+---
+
+## What the Animation Shows
+
+The moving dot traces a piece of music through **embedding space** - a 2D projection
+of the 12-dimensional chroma vector onto the circle of fifths. Position shows which
+pitch classes dominate at each moment; motion shows how the harmony changes over time.
+
+**Center and radius** are geometric properties of this projection. A point near the
+center means low directional bias in this projection. That can happen because many
+pitch classes are active, or because opposing pulls cancel each other out. A point
+near the edge means one region of the circle dominates.
+This is a statement about **spectral focus**, not directly about consonance or
+dissonance.
+
+**"Tonal center" vs "tonic"**: the aggregate center of the orbit cloud points toward
+the region of the circle the piece spends the most time near. For Bach's Prelude in C,
+that's the C/G neighborhood - consistent with C major, and suggestive of the tonic.
+But this is a statistical correlation, not a proof. Pieces that modulate widely can
+have a center that doesn't correspond to any single key. The two concepts are related
+but not identical.
+
+**Returning inward** often *feels* like resolution or "coming home." The ear recognizes
+the return to familiar spectral territory - but it's a visual/structural reset, not
+direct evidence that you've arrived at the tonic.
+
+---
+
+## Color Modes
+
+The **Color** dropdown changes what the dot color encodes:
+
+**Time (default)** - blue at the beginning of the piece, red at the end.
+Shows the chronological path through embedding space.
+
+**Tonal speed** - how fast the orbit point is moving between consecutive frames.
+Green = slow (sustained harmony), red = fast (rapid harmonic change). Ragtime
+pieces light up red; sustained chords stay green.
+
+**Tonal curvature** - how sharply the orbit path is bending. Green = straight-line
+motion (sequential modulation through related keys), red = sharp turns (abrupt
+harmonic pivots). High curvature often corresponds to deceptive cadences or
+chromatic substitutions.
+
+**Chroma entropy** - how evenly the energy is distributed across all 12 pitch classes.
+Green = concentrated (one or two pitch classes dominate), red = diffuse (many pitch
+classes active simultaneously). Dense chords and chromatic passages show high entropy.
+
+**Tonal focus radius (debug)** - distance from the orbit cloud's geometric center.
+This measures how far the current moment is from the piece's average position in the
+projection. It is a geometric property of the embedding, **not** a direct measure of
+consonance, dissonance, or distance from the tonic. It is also different from
+distance to the projection origin (0,0).
+
+---
+
+## Building Blocks
+
+### Chroma: What the Audio Actually Contains
+
+When you play a C on a piano, the string doesn't just vibrate at one frequency - it
+produces a fundamental plus a stack of overtones (harmonics). But your ear collapses
+all of that into a single perception: "that's a C." A low C and a high C sound like
+the same *note*, just in different registers. This perceptual equivalence across
+octaves is the basis of **pitch class**: C3, C4, and C5 all belong to pitch class C.
+
+There are exactly 12 pitch classes in Western music (C, C#, D, ... B), and a
+**chroma vector** is a 12-element array that answers the question: *how much of each
+pitch class is present in the audio right now?*
+
+To build one, you run the audio through a bank of filters - one per pitch class -
+that sum energy across all octaves. The result is 12 non-negative numbers. Think of
+each number as "how loud is this note name right now, regardless of which octave it's in."
+
+A C major chord (C, E, G sounding together) produces a chroma vector where the C, E,
+and G bins are large and the other nine are near zero. A dense chromatic cluster
+lights up many bins at once. Silence gives you all zeros.
+
+The word "chroma" comes from the Greek for color - the idea is that pitch class is
+to sound what hue is to light. Two C's an octave apart are the same chroma, just as
+two reds at different brightnesses are the same hue.
+
+### The Circle of Fifths
+
+The circle of fifths places the 12 pitch classes around a ring so that neighbors are a
+perfect fifth (7 semitones) apart: C -> G -> D -> A -> E -> B -> F# -> C# -> G# -> D# -> A# -> F -> back to C.
+Notes that sound harmonically natural together end up close to each other on this ring.
+C major (C, E, G) and its closely related chords (Am, F, G7) all cluster in the same region.
+
+---
+
+## The Projection
+
+Each pitch class gets a fixed **unit vector** pointing outward from the center of the circle
+at its assigned position on the ring. For pitch class *i*:
+
+$$
+\hat{u}_i = \left(\cos\!\left(\frac{2\pi \cdot (7i \bmod 12)}{12}\right),\; \sin\!\left(\frac{2\pi \cdot (7i \bmod 12)}{12}\right)\right)
+$$
+
+The factor of 7 comes from the circle of fifths - incrementing the index by 1 jumps
+7 semitones (a perfect fifth), cycling through all 12 pitch classes.
+
+The **orbit point** for a given moment is the weighted average of these unit vectors,
+weighted by the chroma values:
+
+$$
+\mathbf{p} = \frac{\sum_{i=0}^{11} c_i \, \hat{u}_i}{\sum_{i=0}^{11} c_i}
+$$
+
+where $c_i \geq 0$ is the chroma energy of pitch class $i$.
+
+This is the **center of mass** of the chroma distribution on the unit circle.
+If only C is sounding, the point is at the C position on the ring - radius 1, distance from origin.
+If C, G, and D are equally loud (closer to a suspended C/G sonority than Dsus2), the point is somewhere between them.
+
+The point always lives inside the unit disk: $\|\mathbf{p}\| \leq 1$.
+
+---
+
+## What the Pieces Reveal
+
+A few patterns that emerge across the nine public domain pieces in the viewer:
+
+**Bach's Prelude in C Major** - tight cluster in the C/G/D/A region, consistent
+with diatonic C major harmony. Modulates briefly into F and Am territory, then returns.
+
+**Debussy's Clair de Lune** - much broader spread than Bach.
+Debussy's impressionist style wanders through many harmonic regions.
+The orbit visits the Ab/Eb side of the circle, which corresponds to the mediant-heavy
+chord vocabulary he favored. More scatter, less predictable path.
+
+**Chopin's Nocturne Op. 9 No. 2** - compact orbit with occasional excursions.
+The nocturne stays close to its home key area for most of its duration,
+with chromatic passing moments showing up as isolated points.
+
+**Scott Joplin's pieces** (Maple Leaf Rag, The Entertainer) - visibly more dynamic motion
+than the Romantic pieces, consistent with ragtime's rapid harmonic rhythm.
+The cloud shows more "path-like" structure rather than a single tight cluster.
+
+---
+
+## Notes
+
+**Frame rate and smoothing**: chroma is extracted at one frame per ~45 ms with no
+inter-frame smoothing. The orbit point can jump between frames; the scatter plot
+you see is the full unsmoothed trajectory.
+
+**100% fifths projection**: the viewer uses a pure circle-of-fifths layout. An
+alternative approach blends in a major-thirds component (placing pitch classes by
+major thirds instead of fifths), but the viewer here uses fifths only.
+
+**Audio source**: all nine pieces were rendered from MIDI files using the
+SplendidGrandPiano sample library, then processed through the same audio chroma
+pipeline used for YouTube-sourced audio.
+
+---
+
+## References
+
+- **[Melody as a Log-Derivative](../melody-as-log-derivative/)** - companion post on why intervals are ratios and melody survives transposition.
+- **[Musical Consonance from Frequency Interactions](../musical-consonance-from-frequency-interactions/)** - how consonance emerges from harmonic spectra and auditory physiology.
+- **Krumhansl, C.L. (1990).** *Cognitive Foundations of Musical Pitch.* Oxford University Press. - foundational work on tonal hierarchies and the circle of fifths as a perceptual space.
+- **Chew, E. (2014).** *Mathematical and Computational Modeling of Tonality.* Springer. - formal treatment of pitch-class representations including the Spiral Array, a 3D extension of the circle-of-fifths projection used here.
+
+---
+
+## Authorship
+
+I didn't write any of this content. The text, visualizations, and interactive viewer are the result of iterative collaboration with Claude (Anthropic). The orbit data was extracted from a custom audio analysis pipeline; the interactive canvas component was implemented by Claude Code.

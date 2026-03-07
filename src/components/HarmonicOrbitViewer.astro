@@ -1,0 +1,504 @@
+---
+// HarmonicOrbitViewer.astro
+// Plotly-based Harmonic Orbit Space viewer with audio playback.
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/';
+const orbitDataUrl = `${base}blog/harmonic-orbit-space/orbit-data.json`;
+const audioBaseUrl = `${base}blog/harmonic-orbit-space/audio/`;
+---
+
+<script src="https://cdn.plot.ly/plotly-3.4.0.min.js" is:inline></script>
+
+<div class="ov-root" data-orbit-url={orbitDataUrl} data-audio-base={audioBaseUrl}>
+  <div class="ov-controls">
+    <select id="ovSong" class="ov-select ov-song-select"></select>
+    <button class="ov-playbtn" id="ovPlay">&#9654; Play</button>
+    <span class="ov-time" id="ovTime">0.0s</span>
+    <label class="ov-ctrl-group">Speed
+      <input type="range" id="ovSpd" min="0.25" max="4" step="0.25" value="1" />
+      <span id="ovSpdLbl">&times;1.0</span>
+    </label>
+    <label class="ov-ctrl-group">Tail
+      <input type="range" id="ovTrl" min="2" max="30" step="1" value="8" />
+      <span id="ovTrlLbl">8s</span>
+    </label>
+    <label class="ov-ctrl-group">Color
+      <select id="ovColorMode" class="ov-select">
+        <option value="time_norm" selected>time</option>
+        <option value="tonal_speed">tonal speed</option>
+        <option value="tonal_curvature">tonal curvature</option>
+        <option value="chroma_entropy">chroma entropy</option>
+        <option value="tonal_focus_radius">focus radius (debug)</option>
+      </select>
+    </label>
+    <label class="ov-ctrl-group">
+      <input type="checkbox" id="ovCof" /> CoF
+    </label>
+    <button class="ov-expand-btn" id="ovExpand" title="Expand plot">&#x26F6;</button>
+  </div>
+  <div class="ov-chart-wrap" id="ovChartWrap">
+    <div class="ov-placeholder" id="ovPlaceholder">
+      <div class="ov-placeholder-ring"></div>
+      <div class="ov-placeholder-text">Loading orbit data...</div>
+    </div>
+    <div id="ovChart"></div>
+  </div>
+  <div class="ov-footer">
+    <div class="ov-meta" id="ovMeta"></div>
+    <div class="ov-legend" id="ovLegend">
+      <span class="ov-leg"><span class="ov-dot" style="background:#2d5a8a"></span>early</span>
+      <span class="ov-leg"><span class="ov-dot" style="background:#88badd"></span>late</span>
+    </div>
+    <div class="ov-debug-note" id="ovDebugNote" style="display:none">
+      Focus radius is cloud-center distance in this projection, not consonance, dissonance, or tonic distance.
+    </div>
+  </div>
+  <audio id="ovAud" preload="none" style="display:none"></audio>
+</div>
+
+<script is:inline>
+(function () {
+  const root = document.querySelector('.ov-root');
+  const ORBIT_URL = root.dataset.orbitUrl;
+  const AUDIO_BASE = root.dataset.audioBase;
+
+  let _allSongs = [];
+  let _activeSong = null;
+  let _blend = 0;
+  let _cofOn = false;
+  let _colorMode = 'time_norm';
+  let _expanded = false;
+  let _orbitCache = null;
+  let _cursorIdx = -1;
+  const ANI = { playing: false, t: 0, spd: 1, trl: 8, raf: null, last: null };
+
+  const $ = id => document.getElementById(id);
+  const aud = $('ovAud');
+  const metaEl = $('ovMeta');
+  const playBtn = $('ovPlay');
+  const timeEl = $('ovTime');
+  const songSelect = $('ovSong');
+  const chartWrap = $('ovChartWrap');
+
+  // ── Orbit computation ─────────────────────────────────────────────────────
+  function computeOrbitCache(points, blend) {
+    const fw = 1 - blend, tw = blend;
+    const pts = [];
+    let xMn = Infinity, xMx = -Infinity, yMn = Infinity, yMx = -Infinity;
+    for (const p of points) {
+      const pc = p.pc;
+      let x = 0, y = 0, w = 0;
+      for (let i = 0; i < 12; i++) {
+        const pv = pc[i] || 0;
+        const ca = (2 * Math.PI * ((i * 7) % 12)) / 12;
+        const ta = (2 * Math.PI * ((i * 4) % 12)) / 12;
+        x += (fw * Math.cos(ca) + tw * Math.cos(ta)) * pv;
+        y += (fw * Math.sin(ca) + tw * Math.sin(ta)) * pv;
+        w += pv;
+      }
+      const valid = w > 1e-9;
+      const ox = valid ? x / w : null, oy = valid ? y / w : null;
+      if (valid) {
+        if (ox < xMn) xMn = ox; if (ox > xMx) xMx = ox;
+        if (oy < yMn) yMn = oy; if (oy > yMx) yMx = oy;
+      }
+      pts.push({ x: ox, y: oy, t: p.t, os: p.os, ts: p.ts, tc: p.tc, ce: p.ce, is_valid: valid });
+    }
+    const xPd = ((xMx - xMn) || 0.2) * 0.12, yPd = ((yMx - yMn) || 0.2) * 0.12;
+    let cx = 0, cy = 0, vc = 0;
+    for (const p of pts) { if (p.is_valid) { cx += p.x; cy += p.y; vc++; } }
+    if (vc > 0) { cx /= vc; cy /= vc; }
+    let md = 0;
+    for (const p of pts) { if (p.is_valid) { const d = Math.sqrt((p.x-cx)**2+(p.y-cy)**2); if (d > md) md = d; } }
+    return { pts, xRange: [xMn - xPd, xMx + xPd], yRange: [yMn - yPd, yMx + yPd], center: { x: cx, y: cy }, maxDist: md || 1 };
+  }
+
+  // ── CoF overlay (fifths ring + labels only) ───────────────────────────────
+  function buildCofTraces() {
+    if (!_cofOn) return [];
+    const nn = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const LR = 1.18;
+    function pu5(i) { const a = (2*Math.PI*((i*7)%12))/12; return { nx: Math.cos(a), ny: Math.sin(a) }; }
+    const fo = [0,7,2,9,4,11,6,1,8,3,10,5], vf = fo.map(i => pu5(i));
+    return [
+      { type:'scatter', mode:'lines', x:[...vf.map(v=>v.nx),vf[0].nx], y:[...vf.map(v=>v.ny),vf[0].ny], line:{color:'rgba(180,180,255,0.22)',width:1}, hoverinfo:'none', showlegend:false },
+      { type:'scatter', mode:'text', x:fo.map(i=>pu5(i).nx*LR), y:fo.map(i=>pu5(i).ny*LR), text:fo.map(i=>nn[i]), textfont:{color:'rgba(200,200,255,0.55)',size:11}, textposition:'middle center', hoverinfo:'none', showlegend:false },
+    ];
+  }
+
+  // ── Plotly orbit plot ─────────────────────────────────────────────────────
+  function buildOrbitPlot() {
+    if (!_orbitCache) return;
+    _cursorIdx = 0;
+    const xr = _cofOn ? [-1.35,1.35] : _orbitCache.xRange;
+    const yr = _cofOn ? [-1.35,1.35] : _orbitCache.yRange;
+    const traces = [
+      { type:'scatter', mode:'markers', x:[], y:[], marker:{size:[],color:[],opacity:[],line:{width:0}}, hoverinfo:'none', showlegend:false },
+      ...buildCofTraces(),
+    ];
+    Plotly.react('ovChart', traces, {
+      paper_bgcolor:'#0d1117', plot_bgcolor:'#0d1117',
+      margin:{l:0,r:0,b:0,t:0},
+      xaxis:{range:xr, visible:false, showgrid:false, zeroline:false},
+      yaxis:{range:yr, visible:false, showgrid:false, zeroline:false, scaleanchor:'x', scaleratio:1},
+      showlegend:false, hovermode:false,
+    }, { responsive:true, displayModeBar:false });
+  }
+
+  // ── Color ─────────────────────────────────────────────────────────────────
+  let _colorRanges = null;
+  function ensureColorRanges() {
+    if (_colorRanges) return;
+    const vals = { ts: [], tc: [], ce: [] };
+    for (const pt of _orbitCache.pts) {
+      if (!pt.is_valid) continue;
+      if (pt.ts != null) vals.ts.push(pt.ts);
+      if (pt.tc != null) vals.tc.push(Math.abs(pt.tc));
+      if (pt.ce != null) vals.ce.push(pt.ce);
+    }
+    const range = arr => arr.length ? [Math.min(...arr), Math.max(...arr)] : [0, 1];
+    _colorRanges = { ts: range(vals.ts), tc: range(vals.tc), ce: range(vals.ce) };
+  }
+
+  function ptColor(pt, frac, dur) {
+    const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
+    const norm = (v, r) => r[1] > r[0] ? clamp((v - r[0]) / (r[1] - r[0]), 0, 1) : 0.5;
+    if (_colorMode === 'time_norm') {
+      const tn = dur > 0 ? clamp(pt.t / dur, 0, 1) : 0;
+      return 'hsla(' + Math.round((1 - tn) * 240) + ',75%,' + Math.round(35 + frac * 35) + '%,1)';
+    }
+    ensureColorRanges();
+    let v = 0;
+    if (_colorMode === 'tonal_speed') v = pt.ts != null ? norm(pt.ts, _colorRanges.ts) : 0;
+    else if (_colorMode === 'tonal_curvature') v = pt.tc != null ? norm(Math.abs(pt.tc), _colorRanges.tc) : 0;
+    else if (_colorMode === 'chroma_entropy') v = pt.ce != null ? norm(pt.ce, _colorRanges.ce) : 0;
+    else if (_colorMode === 'tonal_focus_radius') v = clamp(Math.sqrt((pt.x-_orbitCache.center.x)**2+(pt.y-_orbitCache.center.y)**2) / _orbitCache.maxDist, 0, 1);
+    return 'hsla(' + Math.round((1 - v) * 120) + ',80%,' + Math.round(30 + frac * 30 + v * 15) + '%,1)';
+  }
+
+  // ── Static preview (all points faintly visible before playback) ──────────
+  function showStaticCloud() {
+    if (!_orbitCache) return;
+    const dur = _activeSong ? _activeSong.duration : 1;
+    const cx = [], cy = [], cs = [], co = [], cc = [];
+    for (const pt of _orbitCache.pts) {
+      if (!pt.is_valid) continue;
+      const tn = dur > 0 ? Math.min(pt.t / dur, 1) : 0;
+      cx.push(pt.x); cy.push(pt.y);
+      cs.push(5);
+      co.push(0.35);
+      cc.push('hsla(' + Math.round((1 - tn) * 240) + ',60%,45%,1)');
+    }
+    Plotly.restyle('ovChart', { 'x':[cx], 'y':[cy], 'marker.size':[cs], 'marker.color':[cc], 'marker.opacity':[co] }, [_cursorIdx]);
+  }
+
+  // ── Cursor ────────────────────────────────────────────────────────────────
+  function updateCursors(t) {
+    if (_cursorIdx < 0 || !_orbitCache) return;
+    timeEl.textContent = t.toFixed(1) + 's';
+    const tailDur = ANI.trl, dur = _activeSong ? _activeSong.duration : 1;
+    const cx = [], cy = [], cs = [], co = [], cc = [];
+    for (const pt of _orbitCache.pts) {
+      if (!pt.is_valid || pt.t > t) continue;
+      const age = t - pt.t, inTail = age <= tailDur, frac = inTail ? 1 - age / tailDur : 0;
+      cs.push(inTail ? 3 + frac * 25 : 3);
+      co.push(inTail ? 0.2 + frac * 0.8 : 0.2);
+      cx.push(pt.x); cy.push(pt.y);
+      cc.push(ptColor(pt, frac, dur));
+    }
+    Plotly.restyle('ovChart', { 'x':[cx], 'y':[cy], 'marker.size':[cs], 'marker.color':[cc], 'marker.opacity':[co] }, [_cursorIdx]);
+  }
+
+  // ── Animation ─────────────────────────────────────────────────────────────
+  function _aniTick(ts) {
+    if (!ANI.playing) return;
+    if (!aud.paused) { ANI.t = aud.currentTime; }
+    else { if (ANI.last != null) ANI.t = Math.min(_activeSong.duration, ANI.t + (ts - ANI.last) / 1000 * ANI.spd); ANI.last = ts; }
+    updateCursors(ANI.t);
+    if (ANI.t >= _activeSong.duration) { aniStop(); return; }
+    ANI.raf = requestAnimationFrame(_aniTick);
+  }
+  function aniPlay() {
+    if (!_activeSong) return;
+    if (ANI.t >= _activeSong.duration) ANI.t = 0;
+    ANI.playing = true; ANI.last = null;
+    playBtn.textContent = '\u23F8 Pause';
+    aud.currentTime = ANI.t; aud.playbackRate = ANI.spd;
+    aud.play().catch(() => {});
+    ANI.raf = requestAnimationFrame(_aniTick);
+  }
+  function aniStop() {
+    ANI.playing = false; ANI.last = null;
+    if (ANI.raf != null) { cancelAnimationFrame(ANI.raf); ANI.raf = null; }
+    playBtn.textContent = '\u25B6 Play';
+    if (!aud.paused) aud.pause();
+    // Show full orbit cloud when stopped (unless at end)
+    if (ANI.t < 0.1 || ANI.t >= (_activeSong ? _activeSong.duration : 0)) showStaticCloud();
+  }
+
+  // ── Song rendering ────────────────────────────────────────────────────────
+  function renderSong(song) {
+    aniStop(); _activeSong = song; ANI.t = 0;
+    aud.src = AUDIO_BASE + song.audioFile; aud.load();
+    _orbitCache = computeOrbitCache(song.points, _blend);
+    _colorRanges = null;
+    // Hide loading placeholder once we have data
+    const ph = $('ovPlaceholder'); if (ph) ph.style.display = 'none';
+    buildOrbitPlot(); showStaticCloud();
+    metaEl.innerHTML = '<span class="ov-meta-title">' + song.title + '</span><span class="ov-meta-comp">' + song.composer + '</span><span class="ov-meta-stat">' + song.duration.toFixed(0) + 's</span>';
+  }
+
+  // ── Song dropdown ─────────────────────────────────────────────────────────
+  function buildSelector(songs) {
+    songSelect.innerHTML = '';
+    for (const s of songs) {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.composer + ' - ' + s.title;
+      if (s.id === 'fur-elise') opt.selected = true;
+      songSelect.appendChild(opt);
+    }
+  }
+  songSelect.addEventListener('change', () => {
+    const s = _allSongs.find(x => x.id === songSelect.value);
+    if (s) renderSong(s);
+  });
+
+  // ── Controls ──────────────────────────────────────────────────────────────
+  playBtn.addEventListener('click', () => { if (ANI.playing) aniStop(); else aniPlay(); });
+
+  $('ovSpd').addEventListener('input', function() {
+    ANI.spd = Number(this.value); $('ovSpdLbl').textContent = '\u00d7' + ANI.spd.toFixed(1);
+    if (!aud.paused) aud.playbackRate = ANI.spd;
+  });
+  $('ovTrl').addEventListener('input', function() {
+    ANI.trl = parseInt(this.value, 10); $('ovTrlLbl').textContent = ANI.trl + 's';
+  });
+
+  // CoF checkbox (on/off)
+  $('ovCof').addEventListener('change', function() {
+    _cofOn = this.checked;
+    buildOrbitPlot(); updateCursors(ANI.t);
+  });
+
+  // Color mode
+  const colorModeEl = $('ovColorMode'), legendEl = $('ovLegend'), debugNoteEl = $('ovDebugNote');
+  const LEGEND = {
+    time_norm:          { lo:'early', hi:'late', lc:'#2d5a8a', hc:'#88badd' },
+    tonal_speed:        { lo:'slow', hi:'fast', lc:'#22aa22', hc:'#cc2222' },
+    tonal_curvature:    { lo:'straight', hi:'curved', lc:'#22aa22', hc:'#cc2222' },
+    chroma_entropy:     { lo:'focused', hi:'diffuse', lc:'#22aa22', hc:'#cc2222' },
+    tonal_focus_radius: { lo:'near center', hi:'far', lc:'#22aa22', hc:'#cc2222' },
+  };
+  function updateLegend() {
+    const m = LEGEND[_colorMode] || LEGEND.time_norm;
+    legendEl.innerHTML = '<span class="ov-leg"><span class="ov-dot" style="background:'+m.lc+'"></span>'+m.lo+'</span><span class="ov-leg"><span class="ov-dot" style="background:'+m.hc+'"></span>'+m.hi+'</span>';
+    debugNoteEl.style.display = _colorMode === 'tonal_focus_radius' ? '' : 'none';
+  }
+  colorModeEl.addEventListener('change', () => {
+    _colorMode = colorModeEl.value; updateLegend(); updateCursors(ANI.t);
+  });
+
+  // ── Expand / collapse ─────────────────────────────────────────────────────
+  const expandBtn = $('ovExpand');
+  function setExpanded(on) {
+    _expanded = on;
+    root.classList.toggle('ov-expanded', on);
+    expandBtn.textContent = on ? '\u2715' : '\u26F6';
+    expandBtn.title = on ? 'Collapse' : 'Expand plot';
+    // Let Plotly reflow after the CSS transition
+    setTimeout(() => { Plotly.Plots.resize('ovChart'); }, 60);
+  }
+  expandBtn.addEventListener('click', () => setExpanded(!_expanded));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && _expanded) setExpanded(false); });
+
+  aud.addEventListener('ended', () => aniStop());
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    metaEl.textContent = 'Loading\u2026';
+    try {
+      const resp = await fetch(ORBIT_URL);
+      _allSongs = await resp.json();
+      buildSelector(_allSongs);
+      const def = _allSongs.find(s => s.id === 'fur-elise') || _allSongs[0];
+      if (def) renderSong(def);
+    } catch (e) {
+      metaEl.textContent = 'Failed to load orbit data.';
+      console.error(e);
+    }
+  }
+  init();
+})();
+</script>
+
+<style>
+  .ov-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  }
+
+  /* ── Expanded mode ─────────────────────────────────────────────────────── */
+  .ov-root.ov-expanded {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    margin: 0;
+    padding: 0.5rem;
+    background: #0d1117;
+    overflow: hidden;
+  }
+  .ov-root.ov-expanded .ov-chart-wrap {
+    flex: 1;
+    min-height: 0;
+  }
+  .ov-root.ov-expanded #ovChart {
+    height: 100% !important;
+  }
+
+  /* ── Controls row ──────────────────────────────────────────────────────── */
+  .ov-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+    justify-content: center;
+    font-size: 0.72rem;
+    color: #8899aa;
+  }
+
+  .ov-playbtn, .ov-expand-btn {
+    background: #1a2535;
+    color: #88ccff;
+    border: 1px solid #2a4060;
+    border-radius: 5px;
+    padding: 0.3rem 0.65rem;
+    font-family: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .ov-playbtn:hover, .ov-expand-btn:hover { background: #22304a; }
+  .ov-expand-btn { font-size: 0.9rem; padding: 0.2rem 0.5rem; }
+
+  .ov-time {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #4488cc;
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .ov-ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #667788;
+  }
+  .ov-ctrl-group input[type=range] { width: 60px; }
+  .ov-ctrl-group input[type=checkbox] { margin: 0; }
+  .ov-ctrl-group span { min-width: 28px; color: #8899aa; }
+
+  .ov-select {
+    background: #1a2535;
+    color: #88ccff;
+    border: 1px solid #2a4060;
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-family: inherit;
+    font-size: 0.68rem;
+    cursor: pointer;
+  }
+  .ov-song-select { max-width: 260px; }
+
+  /* ── Chart ─────────────────────────────────────────────────────────────── */
+  .ov-chart-wrap {
+    background: #0d1117;
+    border-radius: 0;
+    position: relative;
+  }
+  #ovChart { height: 560px; }
+
+  /* ── Loading placeholder ────────────────────────────────────────────── */
+  .ov-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .ov-placeholder-ring {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(120, 160, 220, 0.15);
+    position: relative;
+    animation: ov-pulse 2.5s ease-in-out infinite;
+  }
+  .ov-placeholder-ring::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 50%;
+    background: rgba(100, 160, 240, 0.5);
+    animation: ov-orbit 3s linear infinite;
+    offset-path: circle(80px);
+  }
+  .ov-placeholder-text {
+    font-size: 0.75rem;
+    color: #556677;
+    letter-spacing: 0.03em;
+  }
+  @keyframes ov-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.03); }
+  }
+  @keyframes ov-orbit {
+    to { offset-distance: 100%; }
+  }
+
+  /* ── Footer ────────────────────────────────────────────────────────────── */
+  .ov-footer { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .ov-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    font-size: 0.75rem;
+    color: #8899aa;
+    justify-content: center;
+  }
+  .ov-meta-title { color: #ccddee; font-weight: 600; }
+  .ov-meta-comp  { color: #99aabb; }
+  .ov-meta-stat  { color: #556677; font-size: 0.70rem; }
+
+  .ov-legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.70rem;
+    color: #556677;
+    align-items: center;
+    justify-content: center;
+  }
+  .ov-leg { display: flex; align-items: center; gap: 0.25rem; }
+  .ov-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .ov-debug-note {
+    text-align: center;
+    font-size: 0.65rem;
+    color: #667788;
+    font-style: italic;
+  }
+</style>
